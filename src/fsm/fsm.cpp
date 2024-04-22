@@ -1,7 +1,7 @@
-#include "canzero.h"
+#include "canzero/canzero.h"
 
-#include "error_handling.h"
-#include "states.h"
+#include "fsm/error_handling.h"
+#include "fsm/states.h"
 #include "util/timestamp.h"
 
 Timestamp g_fsm_last_transition = Timestamp::now();

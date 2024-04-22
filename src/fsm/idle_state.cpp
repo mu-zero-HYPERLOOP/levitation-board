@@ -1,5 +1,5 @@
-#include "canzero.h"
-#include "timestamp.h"
+#include "canzero/canzero.h"
+#include "util/timestamp.h"
 
 mlu_state idle_state_next(mlu_command cmd,
                             Duration time_since_last_transition) {

@@ -1,6 +1,6 @@
-#include "fsm.h"
+#include "fsm/fsm.h"
 
-void main() {
+int main() {
     
     fsm_init();
 
