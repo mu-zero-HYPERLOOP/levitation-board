@@ -1,6 +1,8 @@
 #pragma once
 
 #include "canzero/canzero.h"
-#include "util/timestamp.h"
+namespace fsm::error_handling {
 
-mlu_command handle_errors(mlu_state state, mlu_command cmd, Duration time_since_last_transition);
+levitation_command approve(levitation_command cmd);
+
+} // namespace fsm::error_handling

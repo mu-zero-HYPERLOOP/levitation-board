@@ -3,16 +3,33 @@
 #include "canzero/canzero.h"
 #include "util/timestamp.h"
 
-mlu_state init_state_next(mlu_command cmd, Duration time_since_last_transition);
+namespace fsm::states {
 
-mlu_state idle_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state init(levitation_command cmd,
+                                 Duration time_since_last_transition);
 
-mlu_state precharge_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state idle(levitation_command cmd,
+                                 Duration time_since_last_transition);
 
-mlu_state ready_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state arming45(levitation_command cmd,
+                                      Duration time_since_last_transition);
 
-mlu_state start_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state precharge(levitation_command cmd,
+                                      Duration time_since_last_transition);
 
-mlu_state control_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state ready(levitation_command cmd,
+                                  Duration time_since_last_transition);
 
-mlu_state stop_state_next(mlu_command cmd, Duration time_since_last_transition);
+levitation_state start(levitation_command cmd,
+                                  Duration time_since_last_transition);
+
+levitation_state control(levitation_command cmd,
+                                    Duration time_since_last_transition);
+
+levitation_state stop(levitation_command cmd,
+                                 Duration time_since_last_transition);
+
+levitation_state disarming45(levitation_command cmd,
+                                 Duration time_since_last_transition);
+
+}
