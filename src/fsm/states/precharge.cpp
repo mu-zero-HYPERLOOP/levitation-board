@@ -25,6 +25,11 @@ levitation_state fsm::states::precharge(levitation_command cmd, Duration time_si
     return levitation_state_READY;
   }
 
+  pwm::control(PwmControl());
+  pwm::enable_output();
+  pwm::disable_trig0();
+  pwm::disable_trig1();
+
   if (!sdc_brake::request_close()){
     // Failed to open SDC. (brake pulled).
     canzero_set_command(levitation_command_DISARM45);

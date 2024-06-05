@@ -4,7 +4,6 @@
 #include "control.h"
 #include "firmware/guidance_board.h"
 #include "fsm/fsm.h"
-#include "pwm_brake.h"
 #include "pwm_config.h"
 #include "sdc_brake.h"
 #include "sensors/input_current.h"
@@ -35,7 +34,6 @@ int main() {
   sensors::vdc::calibrate();
 
   // Setup brakes
-  pwm_brake::begin();
   sdc_brake::begin();
 
   // Setup control
@@ -60,7 +58,6 @@ int main() {
 
     // Update brakes
     sdc_brake::update();
-    pwm_brake::update();
 
     // Update control
     adc_isr::update();

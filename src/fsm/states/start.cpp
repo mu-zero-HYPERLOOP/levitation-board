@@ -2,7 +2,6 @@
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
-#include "pwm_brake.h"
 #include "sdc_brake.h"
 
 levitation_state fsm::states::start(levitation_command cmd,
@@ -23,15 +22,15 @@ levitation_state fsm::states::start(levitation_command cmd,
     return levitation_state_CONTROL;
   }
 
+  pwm::enable_output();
+  // control set by isr.
+  pwm::enable_trig0();
+  pwm::enable_trig1();
+
   if (!sdc_brake::request_close()){
     // Failed to close SDC (brake pulled).
     canzero_set_command(levitation_command_DISARM45);
     return levitation_state_DISARMING45;
-  }
-  if (!pwm_brake::request_start()){
-    // Failed to start PWM (brake pulled).
-    canzero_set_command(levitation_command_STOP);
-    return levitation_state_READY;
   }
 
   precharge_mosfet::open();

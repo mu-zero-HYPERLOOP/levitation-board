@@ -2,7 +2,6 @@
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
-#include "pwm_brake.h"
 #include "sdc_brake.h"
 
 constexpr Duration STATE_TIMEOUT = 5_s;
@@ -29,12 +28,16 @@ levitation_state fsm::states::arming45(levitation_command cmd,
     return levitation_state_PRECHARGE;
   }
 
+  pwm::control(PwmControl());
+  pwm::enable_output();
+  pwm::disable_trig0();
+  pwm::disable_trig1();
+
   if (!sdc_brake::request_close()) {
     // Failed to open SDC! (the brake was pulled)
     canzero_set_command(levitation_command_DISARM45);
     return levitation_state_DISARMING45;
   }
-  pwm_brake::stop();
   precharge_mosfet::open();
   feedthrough_mosfet::open();
 

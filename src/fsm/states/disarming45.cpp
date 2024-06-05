@@ -1,7 +1,6 @@
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
-#include "pwm_brake.h"
 #include "sdc_brake.h"
 
 constexpr Duration MIN_STATE_TIME = 2_s;
@@ -12,8 +11,11 @@ levitation_state fsm::states::disarming45(levitation_command cmd, Duration time_
     return levitation_state_IDLE;
   }
 
+  pwm::control(PwmControl());
+  pwm::enable_output();
+  pwm::disable_trig0();
+  pwm::disable_trig1();
   sdc_brake::open();
-  pwm_brake::stop();
   precharge_mosfet::open();
   feedthrough_mosfet::open(); //maybe this should remain open not sure!
 
