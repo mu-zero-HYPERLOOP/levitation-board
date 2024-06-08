@@ -1,8 +1,11 @@
+#include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
 #include "sdc_brake.h"
+
+constexpr Time LANDING_TIME = 3_s;
 
 levitation_state fsm::states::stop(levitation_command cmd,
                                    Duration time_since_last_transition) {
@@ -11,13 +14,11 @@ levitation_state fsm::states::stop(levitation_command cmd,
     return levitation_state_DISARMING45;
   }
 
-  // TODO : Determine if levitation has stopped completely
-  
-  bool control_stopped = false;
-  if (control_stopped){
+  airgap_transition::transition_to_ground(LANDING_TIME);
+
+  if (airgap_transition::done()){
     return levitation_state_READY;
   }
-  
 
   pwm::enable_output();
   // control set by isr.

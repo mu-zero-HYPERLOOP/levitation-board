@@ -1,11 +1,11 @@
 #include "control.h"
 #include "canzero/canzero.h"
+#include "util/csv.h"
+#include "util/ema.h"
 #include "util/metrics.h"
 #include "util/trapazoidal_integral.h"
 #include <algorithm>
 #include <avr/pgmspace.h>
-#include "util/ema.h"
-#include "util/csv.h"
 
 volatile error_flag control_error;
 
@@ -32,9 +32,7 @@ static Timestamp SOR = Timestamp::now();
 GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                                  Current current_right,
                                                  Distance magnet_airgap_left,
-                                                 Distance lim_airgap_left,
-                                                 Distance magnet_airgap_right,
-                                                 Distance lim_airgap_right) {
+                                                 Distance magnet_airgap_right) {
 
   float input = canzero_get_gamepad_lsb_x();
   input = std::clamp(input, 0.0f, 1.0f);
@@ -81,9 +79,6 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
 
   // TODO PID controller
 
-
-
-
   float input2 = canzero_get_gamepad_lsb_x();
 
   const Voltage v = input2 * 3.5_V;
@@ -109,6 +104,4 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   return pwmControl;
 }
 
-void FASTRUN control::update() { 
-  csv_writer.consume(); 
-}
+void FASTRUN control::update() { csv_writer.consume(); }

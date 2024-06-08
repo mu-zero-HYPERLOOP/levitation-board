@@ -1,3 +1,4 @@
+#include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
@@ -13,6 +14,8 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
   if (levitation_command_START == cmd){
     return levitation_state_START;
   }
+
+  airgap_transition::transition_to_ground(0_s);
 
   pwm::control(PwmControl());
   pwm::enable_output();

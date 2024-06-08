@@ -8,9 +8,7 @@ void begin();
 
 GuidancePwmControl control_loop(Current current_left, 
     Current current_right, Distance magnet_airgap_left,
-    Distance lim_airgap_left,
-    Distance magnet_airgap_right, 
-    Distance lim_airgap_right);
+    Distance magnet_airgap_right);
 
 void update();
 

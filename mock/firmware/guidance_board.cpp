@@ -15,6 +15,7 @@
 #include <iostream>
 #include <random>
 #include <thread>
+#include "sensors/airgaps.h"
 
 constexpr size_t MAX_AIN_PERIODIC_JOBS = 10;
 
@@ -33,7 +34,7 @@ static Voltage mock_disp(Distance distance) {
   std::normal_distribution dist{static_cast<float>(distance), 10e-6f};
   const Distance d = Distance(dist(gen));
   const Current i = sensors::formula::inv_displacement420(d);
-  const Voltage v = i * adc_isr::DISP_MEAS_R;
+  const Voltage v = i * sensors::airgaps::R_MEAS;
   return v;
 }
 
@@ -53,13 +54,35 @@ static float current_left = 0;
 Voltage FASTRUN guidance_board::sync_read(ain_pin pin) {
   switch (pin) {
   case ain_pin::disp_sense_mag_l_19:
-    return mock_disp(40_mm);
   case ain_pin::disp_sense_lim_l_18:
-    return mock_disp(40_mm);
+    switch (canzero_get_state()){
+    case levitation_state_INIT:
+      return mock_disp(20_mm);
+    case levitation_state_IDLE:
+    case levitation_state_ARMING45:
+    case levitation_state_PRECHARGE:
+    case levitation_state_READY:
+    case levitation_state_START:
+    case levitation_state_CONTROL:
+    case levitation_state_STOP:
+    case levitation_state_DISARMING45:
+      return mock_disp(Distance(canzero_get_target_airgap_left() * 1e-3));
+    }
   case ain_pin::disp_sense_mag_r_17:
-    return mock_disp(40_mm);
   case ain_pin::disp_sense_lim_r_16:
-    return mock_disp(40_mm);
+    switch (canzero_get_state()){
+    case levitation_state_INIT:
+      return mock_disp(20_mm);
+    case levitation_state_IDLE:
+    case levitation_state_ARMING45:
+    case levitation_state_PRECHARGE:
+    case levitation_state_READY:
+    case levitation_state_START:
+    case levitation_state_CONTROL:
+    case levitation_state_STOP:
+    case levitation_state_DISARMING45:
+      return mock_disp(Distance(canzero_get_target_airgap_right() * 1e-3));
+    }
   case ain_pin::temp_sense_l2_21:
   case ain_pin::temp_sense_l1_20:
   case ain_pin::temp_sense_r2_15:
@@ -70,6 +93,7 @@ Voltage FASTRUN guidance_board::sync_read(ain_pin pin) {
     case levitation_state_INIT:
     case levitation_state_IDLE:
     case levitation_state_ARMING45:
+    case levitation_state_DISARMING45:
       vdc_voltage.push(0_V);
       break;
     case levitation_state_PRECHARGE:

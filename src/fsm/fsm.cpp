@@ -10,6 +10,8 @@ static Timestamp fsm_last_transition = Timestamp::now();
 void fsm::begin() {
   fsm_last_transition = Timestamp::now();
   canzero_set_state(levitation_state_INIT);
+  canzero_set_target_airgap(6.0);
+  canzero_update_continue(canzero_get_time());
 }
 
 
@@ -33,7 +35,7 @@ void fsm::update() {
       next_state = states::init(cmd, time_since_last_transition);
       break;
     case levitation_state_IDLE:
-      next_state = states::init(cmd, time_since_last_transition);
+      next_state = states::idle(cmd, time_since_last_transition);
       break;
     case levitation_state_ARMING45:
       next_state = states::arming45(cmd, time_since_last_transition);

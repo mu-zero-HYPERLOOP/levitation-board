@@ -11,13 +11,10 @@ typedef enum {
   node_id_levitation_board1 = 5,
   node_id_levitation_board2 = 6,
   node_id_levitation_board3 = 7,
-  node_id_levitation_board4 = 8,
-  node_id_levitation_board5 = 9,
-  node_id_levitation_board6 = 10,
-  node_id_input_board = 11,
-  node_id_power_board12 = 12,
-  node_id_power_board24 = 13,
-  node_id_count = 14,
+  node_id_input_board = 8,
+  node_id_power_board12 = 9,
+  node_id_power_board24 = 10,
+  node_id_count = 11,
 } node_id;
 typedef struct {
   uint16_t m_od_index;
@@ -32,6 +29,15 @@ typedef struct {
   uint8_t m_client_id;
   uint8_t m_server_id;
 } set_req_header;
+typedef enum {
+  levitation_command_NONE = 0,
+  levitation_command_ARM45 = 1,
+  levitation_command_PRECHARGE = 2,
+  levitation_command_START = 3,
+  levitation_command_STOP = 4,
+  levitation_command_ABORT = 5,
+  levitation_command_DISARM45 = 6,
+} levitation_command;
 typedef struct {
   uint8_t m_sof;
   uint8_t m_eof;
@@ -65,15 +71,6 @@ typedef enum {
   sdc_status_OPEN = 0,
   sdc_status_CLOSED = 1,
 } sdc_status;
-typedef enum {
-  levitation_command_NONE = 0,
-  levitation_command_ARM45 = 1,
-  levitation_command_PRECHARGE = 2,
-  levitation_command_START = 3,
-  levitation_command_STOP = 4,
-  levitation_command_ABORT = 5,
-  levitation_command_DISARM45 = 6,
-} levitation_command;
 typedef enum {
   bool_t_FALSE = 0,
   bool_t_TRUE = 1,
@@ -174,21 +171,21 @@ static inline error_flag canzero_get_error_precharge_failed() {
   extern error_flag __oe_error_precharge_failed;
   return __oe_error_precharge_failed;
 }
-static inline float canzero_get_outer_airgap_left() {
-  extern float __oe_outer_airgap_left;
-  return __oe_outer_airgap_left;
+static inline float canzero_get_airgap_left() {
+  extern float __oe_airgap_left;
+  return __oe_airgap_left;
 }
-static inline float canzero_get_inner_airgap_left() {
-  extern float __oe_inner_airgap_left;
-  return __oe_inner_airgap_left;
+static inline float canzero_get_airgap_right() {
+  extern float __oe_airgap_right;
+  return __oe_airgap_right;
 }
-static inline float canzero_get_outer_airgap_right() {
-  extern float __oe_outer_airgap_right;
-  return __oe_outer_airgap_right;
+static inline float canzero_get_target_airgap_left() {
+  extern float __oe_target_airgap_left;
+  return __oe_target_airgap_left;
 }
-static inline float canzero_get_inner_airgap_right() {
-  extern float __oe_inner_airgap_right;
-  return __oe_inner_airgap_right;
+static inline float canzero_get_target_airgap_right() {
+  extern float __oe_target_airgap_right;
+  return __oe_target_airgap_right;
 }
 static inline float canzero_get_vdc_voltage() {
   extern float __oe_vdc_voltage;
@@ -326,11 +323,11 @@ typedef struct {
   get_resp_header m_header;
   uint32_t m_data;
 } canzero_message_get_resp;
-static const uint32_t canzero_message_get_resp_id = 0xDD;
+static const uint32_t canzero_message_get_resp_id = 0xBD;
 typedef struct {
   set_resp_header m_header;
 } canzero_message_set_resp;
-static const uint32_t canzero_message_set_resp_id = 0xFD;
+static const uint32_t canzero_message_set_resp_id = 0xDD;
 typedef struct {
   levitation_state m_state;
   sdc_status m_sdc_status;
@@ -338,8 +335,8 @@ typedef struct {
   bool_t m_control_active;
   sdc_status m_precharge_status;
   sdc_status m_feedthrough_status;
-} canzero_message_levitation_board1_stream_state;
-static const uint32_t canzero_message_levitation_board1_stream_state_id = 0x4F;
+} canzero_message_levitation_board3_stream_state;
+static const uint32_t canzero_message_levitation_board3_stream_state_id = 0x4C;
 typedef struct {
   error_level m_error_level_vdc_voltage;
   error_flag m_error_arming_failed;
@@ -351,43 +348,47 @@ typedef struct {
   error_level m_error_level_magnet_temperature_right;
   error_level m_error_level_mcu_temperature;
   error_flag m_assertion_fault;
-} canzero_message_levitation_board1_stream_errors;
-static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0xBA;
+} canzero_message_levitation_board3_stream_errors;
+static const uint32_t canzero_message_levitation_board3_stream_errors_id = 0x96;
 typedef struct {
   float m_vdc_voltage;
   float m_current_left;
   float m_current_right;
   float m_input_current;
-} canzero_message_levitation_board1_stream_voltage_and_currents;
-static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0x59;
+} canzero_message_levitation_board3_stream_voltage_and_currents;
+static const uint32_t canzero_message_levitation_board3_stream_voltage_and_currents_id = 0x55;
 typedef struct {
-  float m_outer_airgap_left;
-  float m_inner_airgap_left;
-  float m_outer_airgap_right;
-  float m_inner_airgap_right;
-} canzero_message_levitation_board1_stream_airgaps;
-static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0x9A;
+  float m_airgap_left;
+  float m_airgap_right;
+  float m_target_airgap_left;
+  float m_target_airgap_right;
+} canzero_message_levitation_board3_stream_airgaps;
+static const uint32_t canzero_message_levitation_board3_stream_airgaps_id = 0x76;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can0;
-static const uint32_t canzero_message_heartbeat_can0_id = 0x10C;
+static const uint32_t canzero_message_heartbeat_can0_id = 0xEA;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can1;
-static const uint32_t canzero_message_heartbeat_can1_id = 0x10B;
+static const uint32_t canzero_message_heartbeat_can1_id = 0xE9;
 typedef struct {
   get_req_header m_header;
 } canzero_message_get_req;
-static const uint32_t canzero_message_get_req_id = 0xDE;
+static const uint32_t canzero_message_get_req_id = 0xBE;
 typedef struct {
   set_req_header m_header;
   uint32_t m_data;
 } canzero_message_set_req;
-static const uint32_t canzero_message_set_req_id = 0xFE;
+static const uint32_t canzero_message_set_req_id = 0xDE;
+typedef struct {
+  levitation_command m_levitation_command;
+} canzero_message_mother_board_stream_levitation_command;
+static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x47;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);
@@ -396,144 +397,288 @@ static inline void canzero_set_config_hash(uint64_t value){
   extern uint64_t __oe_config_hash;
   __oe_config_hash = value;
 }
+
 static inline void canzero_set_build_time(date_time value){
   extern date_time __oe_build_time;
   __oe_build_time = value;
 }
+
 void canzero_set_state(levitation_state value);
+
 void canzero_set_sdc_status(sdc_status value);
+
 void canzero_set_command(levitation_command value);
+
 void canzero_set_precharge_status(sdc_status value);
+
 void canzero_set_feedthrough_status(sdc_status value);
+
 static inline void canzero_set_target_airgap(float value){
   extern float __oe_target_airgap;
   __oe_target_airgap = value;
 }
+
 void canzero_set_control_active(bool_t value);
+
 void canzero_set_error_arming_failed(error_flag value);
+
 void canzero_set_error_precharge_failed(error_flag value);
-static inline void canzero_set_outer_airgap_left(float value){
-  extern float __oe_outer_airgap_left;
-  __oe_outer_airgap_left = value;
+
+static inline void canzero_set_airgap_left(float value){
+  extern float __oe_airgap_left;
+  __oe_airgap_left = value;
 }
-static inline void canzero_set_inner_airgap_left(float value){
-  extern float __oe_inner_airgap_left;
-  __oe_inner_airgap_left = value;
+
+static inline void canzero_set_airgap_right(float value){
+  extern float __oe_airgap_right;
+  __oe_airgap_right = value;
 }
-static inline void canzero_set_outer_airgap_right(float value){
-  extern float __oe_outer_airgap_right;
-  __oe_outer_airgap_right = value;
+
+static inline void canzero_set_target_airgap_left(float value){
+  extern float __oe_target_airgap_left;
+  __oe_target_airgap_left = value;
 }
-static inline void canzero_set_inner_airgap_right(float value){
-  extern float __oe_inner_airgap_right;
-  __oe_inner_airgap_right = value;
+
+static inline void canzero_set_target_airgap_right(float value){
+  extern float __oe_target_airgap_right;
+  __oe_target_airgap_right = value;
 }
+
 static inline void canzero_set_vdc_voltage(float value){
   extern float __oe_vdc_voltage;
   __oe_vdc_voltage = value;
 }
+
 void canzero_set_error_level_vdc_voltage(error_level value);
+
 static inline void canzero_set_error_level_config_vdc_voltage(error_level_config value){
   extern error_level_config __oe_error_level_config_vdc_voltage;
   __oe_error_level_config_vdc_voltage = value;
 }
+
 static inline void canzero_set_current_left(float value){
   extern float __oe_current_left;
   __oe_current_left = value;
 }
+
 static inline void canzero_set_current_right(float value){
   extern float __oe_current_right;
   __oe_current_right = value;
 }
+
 static inline void canzero_set_input_current(float value){
   extern float __oe_input_current;
   __oe_input_current = value;
 }
+
 static inline void canzero_set_error_level_config_magnet_current(error_level_config value){
   extern error_level_config __oe_error_level_config_magnet_current;
   __oe_error_level_config_magnet_current = value;
 }
+
 void canzero_set_error_level_magnet_current_left(error_level value);
+
 void canzero_set_error_level_magnet_current_right(error_level value);
+
 static inline void canzero_set_error_level_config_input_current(error_level_config value){
   extern error_level_config __oe_error_level_config_input_current;
   __oe_error_level_config_input_current = value;
 }
+
 void canzero_set_error_level_input_current(error_level value);
+
 static inline void canzero_set_magnet_temperature_left1(float value){
   extern float __oe_magnet_temperature_left1;
   __oe_magnet_temperature_left1 = value;
 }
+
 static inline void canzero_set_magnet_temperature_left2(float value){
   extern float __oe_magnet_temperature_left2;
   __oe_magnet_temperature_left2 = value;
 }
+
 static inline void canzero_set_magnet_temperature_left_max(float value){
   extern float __oe_magnet_temperature_left_max;
   __oe_magnet_temperature_left_max = value;
 }
+
 void canzero_set_error_level_magnet_temperature_left(error_level value);
+
 static inline void canzero_set_magnet_temperature_right1(float value){
   extern float __oe_magnet_temperature_right1;
   __oe_magnet_temperature_right1 = value;
 }
+
 static inline void canzero_set_magnet_temperature_right2(float value){
   extern float __oe_magnet_temperature_right2;
   __oe_magnet_temperature_right2 = value;
 }
+
 static inline void canzero_set_magnet_temperature_right_max(float value){
   extern float __oe_magnet_temperature_right_max;
   __oe_magnet_temperature_right_max = value;
 }
+
 void canzero_set_error_level_magnet_temperature_right(error_level value);
+
 static inline void canzero_set_error_level_config_magnet_temperature(error_level_config value){
   extern error_level_config __oe_error_level_config_magnet_temperature;
   __oe_error_level_config_magnet_temperature = value;
 }
+
 static inline void canzero_set_mcu_temperature(float value){
   extern float __oe_mcu_temperature;
   __oe_mcu_temperature = value;
 }
+
 void canzero_set_error_level_mcu_temperature(error_level value);
+
 static inline void canzero_set_error_level_config_mcu_temperature(error_level_config value){
   extern error_level_config __oe_error_level_config_mcu_temperature;
   __oe_error_level_config_mcu_temperature = value;
 }
+
 void canzero_set_assertion_fault(error_flag value);
+
 static inline void canzero_set_gamepad_lt2(float value){
   extern float __oe_gamepad_lt2;
   __oe_gamepad_lt2 = value;
 }
+
 static inline void canzero_set_gamepad_rt2(float value){
   extern float __oe_gamepad_rt2;
   __oe_gamepad_rt2 = value;
 }
+
 static inline void canzero_set_gamepad_lsb_x(float value){
   extern float __oe_gamepad_lsb_x;
   __oe_gamepad_lsb_x = value;
 }
+
 static inline void canzero_set_gamepad_lsb_y(float value){
   extern float __oe_gamepad_lsb_y;
   __oe_gamepad_lsb_y = value;
 }
+
 static inline void canzero_set_gamepad_rsb_x(float value){
   extern float __oe_gamepad_rsb_x;
   __oe_gamepad_rsb_x = value;
 }
+
 static inline void canzero_set_gamepad_rsb_y(float value){
   extern float __oe_gamepad_rsb_y;
   __oe_gamepad_rsb_y = value;
 }
+
 static inline void canzero_set_gamepad_lt1_down(bool_t value){
   extern bool_t __oe_gamepad_lt1_down;
   __oe_gamepad_lt1_down = value;
 }
+
 static inline void canzero_set_gamepad_rt1_down(bool_t value){
   extern bool_t __oe_gamepad_rt1_down;
   __oe_gamepad_rt1_down = value;
 }
+
 static inline void canzero_set_gamepad_x_down(bool_t value){
   extern bool_t __oe_gamepad_x_down;
   __oe_gamepad_x_down = value;
 }
+
+void canzero_send_config_hash();
+
+void canzero_send_build_time();
+
+void canzero_send_state();
+
+void canzero_send_sdc_status();
+
+void canzero_send_command();
+
+void canzero_send_precharge_status();
+
+void canzero_send_feedthrough_status();
+
+void canzero_send_target_airgap();
+
+void canzero_send_control_active();
+
+void canzero_send_error_arming_failed();
+
+void canzero_send_error_precharge_failed();
+
+void canzero_send_airgap_left();
+
+void canzero_send_airgap_right();
+
+void canzero_send_target_airgap_left();
+
+void canzero_send_target_airgap_right();
+
+void canzero_send_vdc_voltage();
+
+void canzero_send_error_level_vdc_voltage();
+
+void canzero_send_error_level_config_vdc_voltage();
+
+void canzero_send_current_left();
+
+void canzero_send_current_right();
+
+void canzero_send_input_current();
+
+void canzero_send_error_level_config_magnet_current();
+
+void canzero_send_error_level_magnet_current_left();
+
+void canzero_send_error_level_magnet_current_right();
+
+void canzero_send_error_level_config_input_current();
+
+void canzero_send_error_level_input_current();
+
+void canzero_send_magnet_temperature_left1();
+
+void canzero_send_magnet_temperature_left2();
+
+void canzero_send_magnet_temperature_left_max();
+
+void canzero_send_error_level_magnet_temperature_left();
+
+void canzero_send_magnet_temperature_right1();
+
+void canzero_send_magnet_temperature_right2();
+
+void canzero_send_magnet_temperature_right_max();
+
+void canzero_send_error_level_magnet_temperature_right();
+
+void canzero_send_error_level_config_magnet_temperature();
+
+void canzero_send_mcu_temperature();
+
+void canzero_send_error_level_mcu_temperature();
+
+void canzero_send_error_level_config_mcu_temperature();
+
+void canzero_send_assertion_fault();
+
+void canzero_send_gamepad_lt2();
+
+void canzero_send_gamepad_rt2();
+
+void canzero_send_gamepad_lsb_x();
+
+void canzero_send_gamepad_lsb_y();
+
+void canzero_send_gamepad_rsb_x();
+
+void canzero_send_gamepad_rsb_y();
+
+void canzero_send_gamepad_lt1_down();
+
+void canzero_send_gamepad_rt1_down();
+
+void canzero_send_gamepad_x_down();
+
 #endif
