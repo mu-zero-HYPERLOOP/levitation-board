@@ -5,7 +5,7 @@
 
 levitation_command fsm::error_handling::approve(levitation_command cmd) {
 
-
+  return cmd;
 
   const auto error_flags = std::array<error_flag, 2>{
     canzero_get_error_arming_failed(),

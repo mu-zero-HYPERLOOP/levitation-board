@@ -5,6 +5,7 @@
 #include "control.h"
 #include "firmware/guidance_board.h"
 #include "fsm/fsm.h"
+#include "print.h"
 #include "pwm_config.h"
 #include "sdc_brake.h"
 #include "sensors/airgaps.h"
@@ -16,12 +17,11 @@
 #include "xbar_config.h"
 
 int main() {
-    
   canzero_init();
   fsm::begin();
   guidance_board::begin();
-  adc_config();
   pwm_config();
+  adc_config();
   xbar_config();
 
   // Setup sensors
@@ -53,6 +53,8 @@ int main() {
 
   // init -> idle.
   fsm::finish_init(); 
+  debugPrintf("Finish init\n");
+  canzero_set_state(levitation_state_CONTROL);
   while(true){
     // Receive from CAN
     canzero_can0_poll();
@@ -60,7 +62,7 @@ int main() {
 
     // Update firmware
     guidance_board::update();
-
+    
     // Update sensors
     sensors::airgaps::update();
     sensors::input_current::update();
@@ -68,16 +70,16 @@ int main() {
     sensors::magnet_current::update();
     sensors::magnet_temperatures::update();
     sensors::vdc::update();
-
+    
     airgap_transition::update();
-
+    
     // Update brakes
     sdc_brake::update();
-
+    
     // Update control
     adc_isr::update();
     control::update();
-
+    
     // Update state machine
     fsm::update();
 

@@ -12,7 +12,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <random>
 #include <thread>
 #include "sensors/airgaps.h"

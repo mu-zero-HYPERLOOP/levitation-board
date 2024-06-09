@@ -3,7 +3,6 @@
 #include "util/metrics.h"
 #include "util/timestamp.h"
 #include <cmath>
-#include <iostream>
 
 static float sigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
 

@@ -3,6 +3,7 @@
 #include "control.h"
 #include "error_level_range_check.h"
 #include "firmware/adc_etc.h"
+#include "print.h"
 #include "sensors/formula/current_sense.h"
 #include "sensors/formula/displacement420.h"
 #include <avr/pgmspace.h>
@@ -40,28 +41,31 @@ void adc_isr::begin() {
 }
 
 void adc_etc_done0_isr(AdcTrigRes res) {
+  debugPrintf("ISR\n");
 
-  const Voltage v_i_mag_l_1 = res.trig_res(TRIG0, 0);
-  const Voltage v_i_mag_l_2 = res.trig_res(TRIG0, 1);
-  const Voltage v_i_mag_l_3 = res.trig_res(TRIG0, 2);
-  const Voltage v_i_mag_l_4 = res.trig_res(TRIG0, 3);
-  const Voltage v_i_mag_l_5 = res.trig_res(TRIG0, 4);
-  const Voltage v_i_mag_l_6 = res.trig_res(TRIG0, 5);
+  return;
+
+  const Voltage v_disp_sense_mag_r_1 = res.trig_res(TRIG0, 0);
+  const Voltage v_i_mag_l_1 = res.trig_res(TRIG0, 1);
+  const Voltage v_i_mag_l_2 = res.trig_res(TRIG0, 2);
+  const Voltage v_i_mag_l_3 = res.trig_res(TRIG0, 3);
+  const Voltage v_i_mag_l_4 = res.trig_res(TRIG0, 4);
+  const Voltage v_disp_sense_mag_r_2 = res.trig_res(TRIG0, 5);
   const Voltage v_i_mag_l = (v_i_mag_l_1 + v_i_mag_l_2 + v_i_mag_l_3 +
-                             v_i_mag_l_4 + v_i_mag_l_5 + v_i_mag_l_6) /
-                            6.0f;
+                             v_i_mag_l_4) /
+                            4.0f;
+  const Voltage v_disp_sense_mag_r = (v_disp_sense_mag_r_1 + v_disp_sense_mag_r_2) / 2.0f;
 
-  const Voltage v_i_mag_r_1 = res.trig_res(TRIG4, 0);
-  const Voltage v_i_mag_r_2 = res.trig_res(TRIG4, 1);
-  const Voltage v_i_mag_r_3 = res.trig_res(TRIG4, 2);
-  const Voltage v_i_mag_r_4 = res.trig_res(TRIG4, 3);
-  const Voltage v_i_mag_r_5 = res.trig_res(TRIG4, 4);
-  const Voltage v_i_mag_r_6 = res.trig_res(TRIG4, 5);
+  const Voltage v_disp_sense_mag_l_1 = res.trig_res(TRIG4, 0); 
+  const Voltage v_i_mag_r_1 = res.trig_res(TRIG4, 1);
+  const Voltage v_i_mag_r_2 = res.trig_res(TRIG4, 2);
+  const Voltage v_i_mag_r_3 = res.trig_res(TRIG4, 3);
+  const Voltage v_i_mag_r_4 = res.trig_res(TRIG4, 4);
+  const Voltage v_disp_sense_mag_l_2 = res.trig_res(TRIG4, 5);
   const Voltage v_i_mag_r = (v_i_mag_r_1 + v_i_mag_r_2 + v_i_mag_r_3 +
-                             v_i_mag_r_4 + v_i_mag_r_5 + v_i_mag_r_6) /
-                            6.0f;
-  const Voltage v_disp_sense_mag_l = res.trig_res(TRIG4, 6);
-  const Voltage v_disp_sense_mag_r = res.trig_res(TRIG4, 7);
+                             v_i_mag_r_4) /
+                            4.0f;
+  const Voltage v_disp_sense_mag_l = (v_disp_sense_mag_l_1 + v_disp_sense_mag_l_2) / 2.0f;
 
   // Current sense
   const Current i_mag_r =
@@ -79,6 +83,7 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   const GuidancePwmControl pwmControl = control::control_loop(
       i_mag_l, i_mag_r, disp_sense_mag_l, disp_sense_mag_r);
+
   pwm::control(static_cast<PwmControl>(pwmControl));
 }
 
