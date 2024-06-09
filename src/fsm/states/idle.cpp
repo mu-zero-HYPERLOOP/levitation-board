@@ -10,12 +10,14 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
     return levitation_state_ARMING45;
   }
 
+
+  sdc_brake::release_brake();
+  sdc_brake::open();
+
   pwm::disable_output();
   pwm::disable_trig0();
   pwm::disable_trig1();
 
-  sdc_brake::release_brake();
-  sdc_brake::open();
   precharge_mosfet::open();
   feedthrough_mosfet::open();
 

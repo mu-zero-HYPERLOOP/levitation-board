@@ -1,5 +1,6 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
+#include "control.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
@@ -14,6 +15,8 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
   if (levitation_command_START == cmd){
     return levitation_state_START;
   }
+
+  control::reset();
 
   airgap_transition::transition_to_ground(0_s);
 

@@ -54,7 +54,6 @@ int main() {
   // init -> idle.
   fsm::finish_init(); 
   debugPrintf("Finish init\n");
-  canzero_set_state(levitation_state_CONTROL);
   while(true){
     // Receive from CAN
     canzero_can0_poll();
@@ -86,6 +85,4 @@ int main() {
     // Send on CAN.
     canzero_update_continue(canzero_get_time());
   }
-
-
 }

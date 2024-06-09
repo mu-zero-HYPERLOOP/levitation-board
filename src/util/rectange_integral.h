@@ -1,6 +1,7 @@
 #pragma once
 
-template <typename T> class RectangleIntegral {
+#include "util/metrics.h"
+template <typename T = float> class RectangleIntegral {
 public:
   explicit RectangleIntegral(T inital) : m_integral(inital) {}
 
@@ -8,8 +9,8 @@ public:
     m_integral = value;
   }
 
-  inline void integrate(T v, float dt){
-    m_integral += v * dt;
+  inline void integrate(T v, Time dt){
+    m_integral += v * static_cast<float>(dt);
   }
 
   inline T get(){

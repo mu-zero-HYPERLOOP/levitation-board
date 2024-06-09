@@ -1,6 +1,6 @@
 #pragma once
 
-template<typename base_t>
+template<typename base_t = float>
 class ExponentialMovingAverage {
 public:
   ExponentialMovingAverage(float alpha, base_t inital = 0)

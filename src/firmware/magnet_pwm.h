@@ -7,9 +7,9 @@ struct GuidancePwmControl {
   float right_l = 0.5;
   float right_r = 0.5;
   constexpr operator PwmControl() const {
-    return PwmControl{.duty20 = 0,
+    return PwmControl{.duty20 = 0.5f,
                       .duty22 = left_l,
-                      .duty23 = 0,
+                      .duty23 = 0.5f,
                       .duty42 = left_r,
                       .duty31 = right_l,
                       .duty13 = right_r};

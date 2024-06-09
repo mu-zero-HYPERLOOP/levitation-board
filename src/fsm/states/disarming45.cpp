@@ -15,7 +15,9 @@ levitation_state fsm::states::disarming45(levitation_command cmd, Duration time_
   pwm::enable_output();
   pwm::disable_trig0();
   pwm::disable_trig1();
+
   sdc_brake::open();
+
   precharge_mosfet::open();
   feedthrough_mosfet::open(); //maybe this should remain open not sure!
 

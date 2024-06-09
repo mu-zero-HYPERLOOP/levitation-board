@@ -19,6 +19,31 @@ void pwm::disable_output() {
   m_outen = false;
 }
 
+void pwm::enable_trig0() {
+  if (m_enable_trig0){
+    return;
+  }
+  m_enable_trig0 = true;
+}
+void pwm::disable_trig0() {
+  if (!m_enable_trig0){
+    return;
+  }
+  m_enable_trig0 = false;
+}
+void pwm::enable_trig1() {
+  if (m_enable_trig1){
+    return;
+  }
+  m_enable_trig1 = true;
+}
+void pwm::disable_trig1() {
+  if (!m_enable_trig1){
+    return;
+  }
+  m_enable_trig1 = false;
+}
+
 void pwm::trig0(const std::optional<float> &trig0) {
   if (m_trig0 == trig0) {
     return;

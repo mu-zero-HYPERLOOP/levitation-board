@@ -2,6 +2,7 @@
 #include "canzero/canzero.h"
 #include "util/metrics.h"
 #include "util/timestamp.h"
+#include "firmware/guidance_board.h"
 #include <cmath>
 
 static float sigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
@@ -15,6 +16,7 @@ private:
 
 public:
   void reset(const Distance &airgap) {
+    auto lck = guidance_board::InterruptLock::acquire();
     m_start_airgap = airgap;
     m_end_airgap = airgap;
     m_start_timestamp = Timestamp::now();
@@ -23,6 +25,7 @@ public:
 
   void transition_to(const Distance &target, const Duration &duration) {
     if ((target - m_end_airgap).abs() > 0.1_mm) {
+      auto lck = guidance_board::InterruptLock::acquire();
       m_start_airgap = current();
       m_end_airgap = target;
       m_start_timestamp = Timestamp::now();
@@ -97,3 +100,15 @@ void airgap_transition::update() {
   const Distance target_right = right_animator.current();
   canzero_set_target_airgap_right(target_right / 1_mm);
 }
+
+
+Distance airgap_transition::current_left() {
+  return left_animator.current();
+}
+
+Distance airgap_transition::current_right() {
+  return right_animator.current();
+}
+
+
+

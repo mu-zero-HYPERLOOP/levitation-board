@@ -41,9 +41,6 @@ void adc_isr::begin() {
 }
 
 void adc_etc_done0_isr(AdcTrigRes res) {
-  debugPrintf("ISR\n");
-
-  return;
 
   const Voltage v_disp_sense_mag_r_1 = res.trig_res(TRIG0, 0);
   const Voltage v_i_mag_l_1 = res.trig_res(TRIG0, 1);
