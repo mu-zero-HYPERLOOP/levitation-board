@@ -10,13 +10,13 @@ static DMAMEM BoxcarFilter<Current, 100> left_filter(0_A);
 static DMAMEM BoxcarFilter<Current, 100> right_filter(0_A);
 
 static void on_left_current(const Voltage &v) {
-  const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN);
+  const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   left_filter.push(i);
   canzero_set_current_left(static_cast<float>(left_filter.get()));
 }
 
 static void on_right_current(const Voltage &v) {
-  const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN);
+  const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   right_filter.push(i);
   canzero_set_current_right(static_cast<float>(right_filter.get()));
 }

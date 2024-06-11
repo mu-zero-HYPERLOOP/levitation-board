@@ -65,11 +65,12 @@ static PID right_airgap_pid;
 static PI left_current_pi;
 static PI right_current_pi;
 
-static ExponentialMovingAverage left_error_current_filter(0.01);
-static ExponentialMovingAverage right_error_current_filter(0.01);
 
 static ExponentialMovingAverage<Distance> left_error_airgap_filter(0.01, 0_m);
 static ExponentialMovingAverage<Distance> right_error_airgap_filter(0.01, 0_m);
+
+static ExponentialMovingAverage left_error_current_filter(0.5);
+static ExponentialMovingAverage right_error_current_filter(0.5);
 
 void control::begin() {
   const pid_parameters airgap_pid = {
@@ -124,6 +125,7 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                                  Current current_right,
                                                  Distance magnet_airgap_left,
                                                  Distance magnet_airgap_right) {
+
   // ====================== AIRGAP PIDs =========================
   const Distance target_airgap_left = airgap_transition::current_left();
   const Distance airgap_left_error = target_airgap_left - magnet_airgap_left;
@@ -147,22 +149,26 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   // ======================= CURRENT PIDs =======================
   const float left_current_error =
       left_airgap_pid_output - static_cast<float>(current_left);
+
   left_error_current_filter.push(left_current_error);
   const float left_current_pi_output =
       left_current_pi.step(left_error_current_filter.get());
 
   const float right_current_error =
-      right_airgap_pid_output - static_cast<float>(current_left);
+      right_airgap_pid_output - static_cast<float>(current_right);
+
+  debugPrintf("current %f\n", static_cast<float>(current_right));
+  debugPrintf("error %f\n", right_current_error);
   right_error_current_filter.push(right_current_error);
-  const float right_current_pi_output =
-      right_current_pi.step(right_error_current_filter.get());
+  debugPrintf("error_filter %f\n", right_error_current_filter.get());
+  /* debugPrintf("out = %f\n", right_current_pi_output); */
 
   const Voltage voltage_left_magnet = Voltage(left_current_pi_output);
-  const Voltage voltage_right_magnet = Voltage(right_current_pi_output);
+  const Voltage voltage_right_magnet = Voltage(right_current_error);
 
   // TODO use vdc voltage reading
-  float controlLeft = voltage_left_magnet / 45.0_V;
-  float controlRight = voltage_right_magnet / 45.0_V;
+  float controlLeft = 5_V / 45.0_V;
+  float controlRight = 5_V / 45.0_V;
 
   controlLeft = std::clamp(controlLeft, -0.9f, 0.9f);
   controlRight = std::clamp(controlRight, -0.9f, 0.9f);
@@ -171,6 +177,8 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   const float dutyLR = 0.5 - controlLeft / 2;
   const float dutyRL = 0.5 + controlRight / 2;
   const float dutyRR = 0.5 - controlRight / 2;
+  debugPrintf("%f , %f , %f , %f \n", dutyLL, dutyLR, dutyRL, dutyRR);
+  debugPrintFlush();
 
   GuidancePwmControl pwmControl{};
   pwmControl.left_l = dutyLL;

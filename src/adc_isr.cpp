@@ -55,6 +55,8 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   const Voltage v_disp_sense_mag_r_1 = res.trig_res(TRIG4, 0); 
   const Voltage v_i_mag_r_1 = res.trig_res(TRIG4, 1);
+
+  debugPrintf("cv = %f\n", static_cast<float>(v_i_mag_r_1));
   const Voltage v_i_mag_r_2 = res.trig_res(TRIG4, 2);
   const Voltage v_i_mag_r_3 = res.trig_res(TRIG4, 3);
   const Voltage v_i_mag_r_4 = res.trig_res(TRIG4, 4);
@@ -66,9 +68,9 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   // Current sense
   const Current i_mag_r =
-      sensors::formula::current_sense(v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT);
+      sensors::formula::current_sense(v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm);
   const Current i_mag_l =
-      sensors::formula::current_sense(v_i_mag_l, CURRENT_MEAS_GAIN_LEFT);
+      sensors::formula::current_sense(v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm);
 
   const Current i_disp_sense_mag_l = v_disp_sense_mag_l / DISP_MEAS_R;
   const Distance disp_sense_mag_l =
