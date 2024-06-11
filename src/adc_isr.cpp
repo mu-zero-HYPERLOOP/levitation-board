@@ -41,30 +41,21 @@ void adc_isr::begin() {
 }
 
 void adc_etc_done0_isr(AdcTrigRes res) {
+  // software averages are cringe just use hardware averages!
+  const Voltage v_i_mag_r = res.trig_res(TRIG0, 0);
+  const Voltage v_i_mag_l = res.trig_res(TRIG0, 1);
 
-  const Voltage v_disp_sense_mag_l_1 = res.trig_res(TRIG0, 0);
-  const Voltage v_i_mag_l_1 = res.trig_res(TRIG0, 1);
-  const Voltage v_i_mag_l_2 = res.trig_res(TRIG0, 2);
-  const Voltage v_i_mag_l_3 = res.trig_res(TRIG0, 3);
-  const Voltage v_i_mag_l_4 = res.trig_res(TRIG0, 4);
-  const Voltage v_disp_sense_mag_l_2 = res.trig_res(TRIG0, 5);
-  const Voltage v_i_mag_l = (v_i_mag_l_1 + v_i_mag_l_2 + v_i_mag_l_3 +
-                             v_i_mag_l_4) /
-                            4.0f;
-  const Voltage v_disp_sense_mag_l = (v_disp_sense_mag_l_1 + v_disp_sense_mag_l_2) / 2.0f;
+  const Voltage v_disp_sense_mag_r = res.trig_res(TRIG4, 0); 
+  const Voltage v_disp_sense_mag_l = res.trig_res(TRIG4, 1); 
 
-  const Voltage v_disp_sense_mag_r_1 = res.trig_res(TRIG4, 0); 
-  const Voltage v_i_mag_r_1 = res.trig_res(TRIG4, 1);
-
-  debugPrintf("cv = %f\n", static_cast<float>(v_i_mag_r_1));
-  const Voltage v_i_mag_r_2 = res.trig_res(TRIG4, 2);
-  const Voltage v_i_mag_r_3 = res.trig_res(TRIG4, 3);
-  const Voltage v_i_mag_r_4 = res.trig_res(TRIG4, 4);
-  const Voltage v_disp_sense_mag_r_2 = res.trig_res(TRIG4, 5);
-  const Voltage v_i_mag_r = (v_i_mag_r_1 + v_i_mag_r_2 + v_i_mag_r_3 +
-                             v_i_mag_r_4) /
-                            4.0f;
-  const Voltage v_disp_sense_mag_r = (v_disp_sense_mag_r_1 + v_disp_sense_mag_r_2) / 2.0f;
+  /* debugPrintf("airgap_left   = %f\n", static_cast<float>(v_disp_sense_mag_l)); */
+  /* debugPrintf("airgap_right  = %f\n", static_cast<float>(v_disp_sense_mag_r)); */
+  /*  */
+  /* debugPrintf("current_left  = %f\n", static_cast<float>(v_i_mag_l)); */
+  /* debugPrintf("current_right = %f\n", static_cast<float>(v_i_mag_r)); */
+  /*  */
+  /*  */
+  /* debugPrintFlush(); */
 
   // Current sense
   const Current i_mag_r =

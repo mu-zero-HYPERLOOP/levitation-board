@@ -178,8 +178,9 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
                                        ? info.chains[chain].intr
                                        : DoneInterrupt::NONE);
         // enable done interrupt only for last segment
-        *chain_base |= ADC_ETC_TRIG_CHAIN_CSEL1(
-            pin_to_channel[static_cast<uint8_t>(info.chains[chain].read_pins[segm])]);
+        *chain_base |=
+            ADC_ETC_TRIG_CHAIN_CSEL1(pin_to_channel[static_cast<uint8_t>(
+                info.chains[chain].read_pins[segm])]);
         // select read channel
         // trigger 0-3 read from adc1, trigger 4-7 read from adc2
       } else {
@@ -188,8 +189,9 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
                                        ? info.chains[chain].intr
                                        : DoneInterrupt::NONE);
         // enable done interrupt only for last segment
-        *chain_base |= ADC_ETC_TRIG_CHAIN_CSEL0(
-            pin_to_channel[static_cast<uint8_t>(info.chains[chain].read_pins[segm])]);
+        *chain_base |=
+            ADC_ETC_TRIG_CHAIN_CSEL0(pin_to_channel[static_cast<uint8_t>(
+                info.chains[chain].read_pins[segm])]);
         // select read channel
       }
       *chain_base |= ADC_ETC_TRIG_CHAIN_B2B1 | ADC_ETC_TRIG_CHAIN_B2B0;
@@ -219,41 +221,20 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
       break;
     }
   }
-  adc_etc_initalized = true;
-}
 
-// uses etc trigger 3 and 7 with software trigger.
-// trigger 3 -> uses adc1, trigger 7 -> uses adc2
-// Dont use this function if trigger 3 or 7 is used for regular etc chain.
-Voltage adc_etc::read_single(ain_pin pin) {
-  if (!adc_etc_initalized) {
-    Serial.println("adc not initlialized");
-    return 0_V;
-  }
-  uint8_t ch = pin_to_channel[static_cast<uint8_t>(pin)];
-  if (!(ch & 0x80)) { // use adc1
-    ADC1_HC3 = ADC_HC_ADCH(16);
+  // single reads
+  ADC1_HC3 = ADC_HC_ADCH(16);
 
-    ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 3);
+  ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 3);
 
-    ADC_ETC_TRIG3_CTRL = ADC_ETC_TRIG_CTRL_TRIG_PRIORITY(0); // lowest priority
-    ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_CHAIN(0); // chain length of 1
-    ADC_ETC_TRIG3_CTRL |=
-        ADC_ETC_TRIG_CTRL_TRIG_MODE; // enable software trigger
+  ADC_ETC_TRIG3_CTRL = ADC_ETC_TRIG_CTRL_TRIG_PRIORITY(0); // lowest priority
+  ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_CHAIN(0);   // chain length of 1
+  ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_MODE; // enable software trigger
 
-    ADC_ETC_TRIG3_CHAIN_1_0 |=
-        ADC_ETC_TRIG_CHAIN_IE0(0b00); // no done interrupt
-    ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
-    ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 3);
-    ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_CSEL0(ch & 0x1f);
+  ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_IE0(0b00); // no done interrupt
+  ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
+  ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 3);
 
-    ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
-    while (ADC1_GS & 0b1) { // not great: only checks whether any conversion is
-                            // still in progess
-                            /* Serial.println("adc read single waiting"); */
-    }
-    return (ADC_ETC_TRIG3_RESULT_1_0 & 0xfff) * 3.3_V / max_adc1_value;
-  } else { // use adc2
     ADC2_HC7 = ADC_HC_ADCH(16);
 
     ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 7);
@@ -267,13 +248,38 @@ Voltage adc_etc::read_single(ain_pin pin) {
     ADC_ETC_TRIG7_CHAIN_1_0 = ADC_ETC_TRIG_CHAIN_IE0(0b00); // no done interrupt
     ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
     ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 7);
+
+  adc_etc_initalized = true;
+}
+
+// uses etc trigger 3 and 7 with software trigger.
+// trigger 3 -> uses adc1, trigger 7 -> uses adc2
+// Dont use this function if trigger 3 or 7 is used for regular etc chain.
+Voltage adc_etc::read_single(ain_pin pin) {
+  if (!adc_etc_initalized) {
+    Serial.println("adc not initlialized");
+    return 0_V;
+  }
+  // get channel and the ADC module connected to it.
+  // 0x7f & ch is the channel number
+  // 0x80 & ch is the adc module : 0 -> ADC1, 1 -> ADC2.
+  uint8_t ch = pin_to_channel[static_cast<uint8_t>(pin)];
+  if (!(ch & 0x80)) { // use adc1
+    debugPrintf("ADC1 %u\n", ch);
+    
+    ADC_ETC_TRIG3_CHAIN_1_0 &= ~0xF;
+    ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_CSEL0(ch & 0x7f);
+
+    ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
+    while (ADC1_GS & 0b1); // poll for coco.
+    return (ADC_ETC_TRIG3_RESULT_1_0 & 0xfff) * 3.3_V / max_adc1_value;
+  } else { // use adc2
+    debugPrintf("ADC1 %u\n");
+    ADC_ETC_TRIG7_CHAIN_1_0 &= ~0xF;
     ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_CSEL0(ch & 0x7f);
 
     ADC_ETC_TRIG7_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
-    while (ADC2_GS & 0b1) { // not great: only checks whether any conversion is
-                            // still in progess
-                            /* Serial.println("adc read single waiting"); */
-    }
+    while (ADC2_GS & 0b1); // poll for coco.
     return (ADC_ETC_TRIG7_RESULT_1_0 & 0xfff) * 3.3_V / max_adc2_value;
   }
 }

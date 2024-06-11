@@ -3,6 +3,7 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "control.h"
+#include "firmware/adc_etc.h"
 #include "firmware/guidance_board.h"
 #include "fsm/fsm.h"
 #include "print.h"
