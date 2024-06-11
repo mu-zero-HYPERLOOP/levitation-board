@@ -15,7 +15,6 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
   sdc_brake::open();
 
   pwm::disable_output();
-  pwm::disable_trig0();
   pwm::disable_trig1();
 
   precharge_mosfet::open();

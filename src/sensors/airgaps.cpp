@@ -1,11 +1,12 @@
 #include "sensors/airgaps.h"
 #include "avr/pgmspace.h"
 #include "canzero/canzero.h"
+#include "firmware/adc_etc.h"
 #include "firmware/guidance_board.h"
+#include "print.h"
 #include "sensors/formula/displacement420.h"
 #include "util/boxcar.h"
 #include <cassert>
-#include "print.h"
 
 
 static DMAMEM BoxcarFilter<Distance, 100> left_filter(0_mm);
@@ -48,5 +49,4 @@ void sensors::airgaps::calibrate() {
 }
 
 void sensors::airgaps::update() {
-
 }

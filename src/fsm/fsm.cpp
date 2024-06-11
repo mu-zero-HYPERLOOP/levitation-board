@@ -10,6 +10,9 @@ static Timestamp fsm_last_transition = Timestamp::now();
 void fsm::begin() {
   fsm_last_transition = Timestamp::now();
   canzero_set_state(levitation_state_INIT);
+  canzero_set_command(levitation_command_NONE);
+  canzero_set_error_precharge_failed(error_flag_OK);
+  canzero_set_error_arming_failed(error_flag_OK);
   canzero_set_target_airgap(6.0);
   canzero_update_continue(canzero_get_time());
 }

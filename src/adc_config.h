@@ -6,9 +6,9 @@ static void adc_config() {
   TrigChainInfo chains[2];
   chains[0].trig_num = TRIG0;
   ain_pin chain0_pins[] = {
-      ain_pin::disp_sense_lim_r_16, ain_pin::i_mag_l_24,
+      ain_pin::disp_sense_mag_l_19, ain_pin::i_mag_l_24,
       ain_pin::i_mag_l_24,          ain_pin::i_mag_l_24,
-      ain_pin::i_mag_l_24,          ain_pin::disp_sense_lim_r_16,
+      ain_pin::i_mag_l_24,          ain_pin::disp_sense_mag_l_19,
   };
   chains[0].read_pins = chain0_pins;
   chains[0].chain_length = sizeof(chain0_pins) / sizeof(ain_pin);
@@ -30,15 +30,17 @@ static void adc_config() {
   chains[1].trig_sync = false;
   chains[1].intr = NONE;
 
-  AdcEtcBeginInfo adcBeginInfo;
+  AdcEtcBeginInfo adcBeginInfo{};
   adcBeginInfo.adc1_avg = HwAvg::SAMPLE_4;
   adcBeginInfo.adc1_clock_div = AdcClockDivider::NO_DIV;
   adcBeginInfo.adc1_high_speed = true;
   adcBeginInfo.adc1_sample_time = PERIOD_25;
+  adcBeginInfo.adc1_resolution = BIT_12;
   adcBeginInfo.adc2_avg = adcBeginInfo.adc1_avg;
   adcBeginInfo.adc2_clock_div = adcBeginInfo.adc1_clock_div;
   adcBeginInfo.adc2_high_speed = adcBeginInfo.adc1_high_speed;
   adcBeginInfo.adc2_sample_time = adcBeginInfo.adc1_sample_time;
+  adcBeginInfo.adc2_resolution = adcBeginInfo.adc1_resolution;
   adcBeginInfo.chains = chains;
   adcBeginInfo.num_chains = sizeof(chains) / sizeof(TrigChainInfo);
 

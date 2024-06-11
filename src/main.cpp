@@ -18,6 +18,7 @@
 
 int main() {
   canzero_init();
+  canzero_set_assertion_fault(error_flag_OK);
   fsm::begin();
   guidance_board::begin();
   pwm_config();

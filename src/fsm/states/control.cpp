@@ -22,7 +22,6 @@ levitation_state fsm::states::control(levitation_command cmd, Duration time_sinc
 
   pwm::enable_output();
   // pwm control set by isr.
-  pwm::enable_trig0();
   pwm::enable_trig1();
 
   if (!sdc_brake::request_close()){

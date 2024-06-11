@@ -20,9 +20,19 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
 
   airgap_transition::transition_to_ground(0_s);
 
-  pwm::control(PwmControl());
+
+  const float dutyLL = 0.5;
+  const float dutyLR = 0.5;
+  const float dutyRL = 0.5;
+  const float dutyRR = 0.5;
+
+  GuidancePwmControl pwmControl{};
+  pwmControl.left_l = dutyLL;
+  pwmControl.left_r = dutyLR;
+  pwmControl.right_l = dutyRL;
+  pwmControl.right_r = dutyRR;
+  pwm::control(pwmControl);
   pwm::enable_output();
-  pwm::disable_trig0();
   pwm::disable_trig1();
 
   if (!sdc_brake::request_close()){
@@ -31,8 +41,8 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
     return levitation_state_DISARMING45;
   }
 
-  precharge_mosfet::close();
-  feedthrough_mosfet::open();
+  precharge_mosfet::open();
+  feedthrough_mosfet::close();
 
   return levitation_state_READY;
 }

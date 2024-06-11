@@ -1,6 +1,8 @@
 #include "adc_etc.h"
 #include "analog.c"
+#include "firmware/guidance_board.h"
 #include "imxrt.h"
+#include "print.h"
 #include <Arduino.h>
 
 #define PRREG(x)                                                               \
@@ -230,6 +232,7 @@ Voltage adc_etc::read_single(ain_pin pin) {
   }
   uint8_t ch = pin_to_channel[static_cast<uint8_t>(pin)];
   if (!(ch & 0x80)) { // use adc1
+    debugPrintf("ADC1 channel : %u\n", ch);
     ADC1_HC3 = ADC_HC_ADCH(16);
 
     ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 3);
@@ -248,10 +251,12 @@ Voltage adc_etc::read_single(ain_pin pin) {
     ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
     while (ADC1_GS & 0b1) { // not great: only checks whether any conversion is
                             // still in progess
-                            /* Serial.println("adc read single waiting"); */
+                            Serial.println("adc read single waiting");
     }
+    debugPrintf("res = %u\n", ADC_ETC_TRIG3_RESULT_1_0);
     return (ADC_ETC_TRIG3_RESULT_1_0 & 0xfff) * 3.3_V / max_adc1_value;
   } else { // use adc2
+    debugPrintf("ADC2\n");
     ADC2_HC7 = ADC_HC_ADCH(16);
 
     ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 7);

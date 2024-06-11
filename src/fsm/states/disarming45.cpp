@@ -13,7 +13,6 @@ levitation_state fsm::states::disarming45(levitation_command cmd, Duration time_
 
   pwm::control(PwmControl());
   pwm::enable_output();
-  pwm::disable_trig0();
   pwm::disable_trig1();
 
   sdc_brake::open();

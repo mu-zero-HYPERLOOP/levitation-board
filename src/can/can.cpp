@@ -1,6 +1,7 @@
 #include "can.hpp"
 #include "FlexCAN_T4.h"
 #include "canzero/canzero.h"
+#include "print.h"
 #include "util/timestamp.h"
 #include <assert.h>
 #include <inttypes.h>
@@ -45,7 +46,10 @@ void canzero_can0_send(canzero_frame *frame) {
   for (int i = 0; i < 8; i++) {
     msg.buf[i] = frame->data[i];
   }
-  Can1::send(msg);
+  int suc = Can1::send(msg);
+  if (!suc){
+    debugPrintf("Failed to send CAN frame [%u] bus 1\n", msg.id);
+  }
 }
 int canzero_can0_recv(canzero_frame *frame) {
   CAN_message_t msg;
@@ -100,7 +104,10 @@ void canzero_can1_send(canzero_frame *frame) {
   for (int i = 0; i < 8; i++) {
     msg.buf[i] = frame->data[i];
   }
-  Can2::send(msg);
+  int suc = Can2::send(msg);
+  if (!suc){
+    debugPrintf("Failed to send CAN frame [%u] bus 2\n", msg.id);
+  }
 }
 int canzero_can1_recv(canzero_frame *frame) {
   CAN_message_t msg;
