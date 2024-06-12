@@ -108,7 +108,17 @@ typedef struct {
   double m_Kp;
   double m_Ki;
   double m_Kd;
+  double m_Ki_min;
+  double m_Ki_max;
+  double m_ema_alpha;
 } pid_parameters;
+typedef struct {
+  double m_Kp;
+  double m_Ki;
+  double m_Ki_min;
+  double m_Ki_max;
+  double m_ema_alpha;
+} pi_parameters;
 typedef struct {
   uint32_t id;
   uint8_t dlc;
@@ -328,8 +338,8 @@ static inline pid_parameters canzero_get_airgap_pid() {
   extern pid_parameters __oe_airgap_pid;
   return __oe_airgap_pid;
 }
-static inline pid_parameters canzero_get_current_pi() {
-  extern pid_parameters __oe_current_pi;
+static inline pi_parameters canzero_get_current_pi() {
+  extern pi_parameters __oe_current_pi;
   return __oe_current_pi;
 }
 static inline float canzero_get_left_airgap_controller_p_term() {
@@ -344,6 +354,10 @@ static inline float canzero_get_left_airgap_controller_d_term() {
   extern float __oe_left_airgap_controller_d_term;
   return __oe_left_airgap_controller_d_term;
 }
+static inline float canzero_get_left_airgap_controller_output() {
+  extern float __oe_left_airgap_controller_output;
+  return __oe_left_airgap_controller_output;
+}
 static inline float canzero_get_right_airgap_controller_p_term() {
   extern float __oe_right_airgap_controller_p_term;
   return __oe_right_airgap_controller_p_term;
@@ -356,6 +370,10 @@ static inline float canzero_get_right_airgap_controller_d_term() {
   extern float __oe_right_airgap_controller_d_term;
   return __oe_right_airgap_controller_d_term;
 }
+static inline float canzero_get_right_airgap_controller_output() {
+  extern float __oe_right_airgap_controller_output;
+  return __oe_right_airgap_controller_output;
+}
 static inline float canzero_get_left_current_controller_p_term() {
   extern float __oe_left_current_controller_p_term;
   return __oe_left_current_controller_p_term;
@@ -364,6 +382,10 @@ static inline float canzero_get_left_current_controller_i_term() {
   extern float __oe_left_current_controller_i_term;
   return __oe_left_current_controller_i_term;
 }
+static inline float canzero_get_left_current_controller_output() {
+  extern float __oe_left_current_controller_output;
+  return __oe_left_current_controller_output;
+}
 static inline float canzero_get_right_current_controller_p_term() {
   extern float __oe_right_current_controller_p_term;
   return __oe_right_current_controller_p_term;
@@ -371,6 +393,10 @@ static inline float canzero_get_right_current_controller_p_term() {
 static inline float canzero_get_right_current_controller_i_term() {
   extern float __oe_right_current_controller_i_term;
   return __oe_right_current_controller_i_term;
+}
+static inline float canzero_get_right_current_controller_output() {
+  extern float __oe_right_current_controller_output;
+  return __oe_right_current_controller_output;
 }
 typedef struct {
   get_resp_header m_header;
@@ -388,8 +414,8 @@ typedef struct {
   bool_t m_control_active;
   sdc_status m_precharge_status;
   sdc_status m_feedthrough_status;
-} canzero_message_levitation_board3_stream_state;
-static const uint32_t canzero_message_levitation_board3_stream_state_id = 0x49;
+} canzero_message_levitation_board1_stream_state;
+static const uint32_t canzero_message_levitation_board1_stream_state_id = 0x69;
 typedef struct {
   error_level m_error_level_vdc_voltage;
   error_flag m_error_arming_failed;
@@ -401,53 +427,60 @@ typedef struct {
   error_level m_error_level_magnet_temperature_right;
   error_level m_error_level_mcu_temperature;
   error_flag m_assertion_fault;
-} canzero_message_levitation_board3_stream_errors;
-static const uint32_t canzero_message_levitation_board3_stream_errors_id = 0x93;
+} canzero_message_levitation_board1_stream_errors;
+static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0x56;
 typedef struct {
   float m_vdc_voltage;
   float m_current_left;
   float m_current_right;
   float m_input_current;
-} canzero_message_levitation_board3_stream_voltage_and_currents;
-static const uint32_t canzero_message_levitation_board3_stream_voltage_and_currents_id = 0x52;
+} canzero_message_levitation_board1_stream_voltage_and_currents;
+static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0x76;
 typedef struct {
   float m_airgap_left;
   float m_airgap_right;
   float m_target_airgap_left;
   float m_target_airgap_right;
-} canzero_message_levitation_board3_stream_airgaps;
-static const uint32_t canzero_message_levitation_board3_stream_airgaps_id = 0x74;
+} canzero_message_levitation_board1_stream_airgaps;
+static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0x78;
 typedef struct {
   float m_left_airgap_controller_p_term;
   float m_left_airgap_controller_i_term;
   float m_left_airgap_controller_d_term;
-} canzero_message_levitation_board3_stream_controller_debug_1;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_1_id = 0x94;
+  float m_left_airgap_controller_output;
+} canzero_message_levitation_board1_stream_controller_debug_1;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_1_id = 0x98;
 typedef struct {
   float m_right_airgap_controller_p_term;
   float m_right_airgap_controller_i_term;
   float m_right_airgap_controller_d_term;
-} canzero_message_levitation_board3_stream_controller_debug_2;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_2_id = 0x53;
+  float m_right_airgap_controller_output;
+} canzero_message_levitation_board1_stream_controller_debug_2;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_2_id = 0x57;
 typedef struct {
   float m_left_current_controller_p_term;
   float m_left_current_controller_i_term;
+  float m_left_current_controller_output;
+} canzero_message_levitation_board1_stream_controller_debug_3;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_3_id = 0x77;
+typedef struct {
   float m_right_current_controller_p_term;
   float m_right_current_controller_i_term;
-} canzero_message_levitation_board3_stream_controller_debug_3;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_3_id = 0x73;
+  float m_right_current_controller_output;
+} canzero_message_levitation_board1_stream_controller_debug_4;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_4_id = 0x97;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can0;
-static const uint32_t canzero_message_heartbeat_can0_id = 0xE7;
+static const uint32_t canzero_message_heartbeat_can0_id = 0xE6;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can1;
-static const uint32_t canzero_message_heartbeat_can1_id = 0xE6;
+static const uint32_t canzero_message_heartbeat_can1_id = 0xE5;
 typedef struct {
   get_req_header m_header;
 } canzero_message_get_req;
@@ -460,7 +493,7 @@ static const uint32_t canzero_message_set_req_id = 0xDE;
 typedef struct {
   levitation_command m_levitation_command;
 } canzero_message_mother_board_stream_levitation_command;
-static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x44;
+static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x43;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);
@@ -662,8 +695,8 @@ static inline void canzero_set_airgap_pid(pid_parameters value){
   __oe_airgap_pid = value;
 }
 
-static inline void canzero_set_current_pi(pid_parameters value){
-  extern pid_parameters __oe_current_pi;
+static inline void canzero_set_current_pi(pi_parameters value){
+  extern pi_parameters __oe_current_pi;
   __oe_current_pi = value;
 }
 
@@ -682,6 +715,11 @@ static inline void canzero_set_left_airgap_controller_d_term(float value){
   __oe_left_airgap_controller_d_term = value;
 }
 
+static inline void canzero_set_left_airgap_controller_output(float value){
+  extern float __oe_left_airgap_controller_output;
+  __oe_left_airgap_controller_output = value;
+}
+
 static inline void canzero_set_right_airgap_controller_p_term(float value){
   extern float __oe_right_airgap_controller_p_term;
   __oe_right_airgap_controller_p_term = value;
@@ -697,6 +735,11 @@ static inline void canzero_set_right_airgap_controller_d_term(float value){
   __oe_right_airgap_controller_d_term = value;
 }
 
+static inline void canzero_set_right_airgap_controller_output(float value){
+  extern float __oe_right_airgap_controller_output;
+  __oe_right_airgap_controller_output = value;
+}
+
 static inline void canzero_set_left_current_controller_p_term(float value){
   extern float __oe_left_current_controller_p_term;
   __oe_left_current_controller_p_term = value;
@@ -707,6 +750,11 @@ static inline void canzero_set_left_current_controller_i_term(float value){
   __oe_left_current_controller_i_term = value;
 }
 
+static inline void canzero_set_left_current_controller_output(float value){
+  extern float __oe_left_current_controller_output;
+  __oe_left_current_controller_output = value;
+}
+
 static inline void canzero_set_right_current_controller_p_term(float value){
   extern float __oe_right_current_controller_p_term;
   __oe_right_current_controller_p_term = value;
@@ -715,6 +763,11 @@ static inline void canzero_set_right_current_controller_p_term(float value){
 static inline void canzero_set_right_current_controller_i_term(float value){
   extern float __oe_right_current_controller_i_term;
   __oe_right_current_controller_i_term = value;
+}
+
+static inline void canzero_set_right_current_controller_output(float value){
+  extern float __oe_right_current_controller_output;
+  __oe_right_current_controller_output = value;
 }
 
 void canzero_send_config_hash();
@@ -823,18 +876,26 @@ void canzero_send_left_airgap_controller_i_term();
 
 void canzero_send_left_airgap_controller_d_term();
 
+void canzero_send_left_airgap_controller_output();
+
 void canzero_send_right_airgap_controller_p_term();
 
 void canzero_send_right_airgap_controller_i_term();
 
 void canzero_send_right_airgap_controller_d_term();
 
+void canzero_send_right_airgap_controller_output();
+
 void canzero_send_left_current_controller_p_term();
 
 void canzero_send_left_current_controller_i_term();
 
+void canzero_send_left_current_controller_output();
+
 void canzero_send_right_current_controller_p_term();
 
 void canzero_send_right_current_controller_i_term();
+
+void canzero_send_right_current_controller_output();
 
 #endif

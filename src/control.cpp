@@ -50,80 +50,56 @@ struct PI_state {
   float i_term = 0.0f;
 };
 
+static Voltage vdc_voltage;
 static float delta_time;
 
 // Left airgap PID
 static PID_parameters pid_left_airgap_parameters;
 static PID_state pid_left_airgap_state;
-static ExponentialMovingAverage<Distance> pid_left_airgap_filter(0.01, 12_mm);
+static ExponentialMovingAverage<Distance> pid_left_airgap_filter{};
 
 // Right airgap PID
 static PID_parameters pid_right_airgap_parameters;
 static PID_state pid_right_airgap_state;
-static ExponentialMovingAverage<Distance> pid_right_airgap_filter(0.01, 12_mm);
+static ExponentialMovingAverage<Distance> pid_right_airgap_filter{};
 
 // Left current PI
 static PI_parameters pi_left_current_parameters;
 static PI_state pi_left_current_state;
-static ExponentialMovingAverage<Current> pi_left_current_filter(0.5, 0_A);
+static ExponentialMovingAverage<Current> pi_left_current_filter{};
 
 // Right current PI
 static PI_parameters pi_right_current_parameters;
 static PI_state pi_right_current_state;
-static ExponentialMovingAverage<Current> pi_right_current_filter(0.5, 0_A);
+static ExponentialMovingAverage<Current> pi_right_current_filter{};
+
+// Output debug!
+static Voltage debug_left_voltage = 0_V;
+static Voltage debug_right_voltage = 0_V;
+static Current debug_left_target_current = 0_A;
+static Current debug_right_target_current = 0_A;
 
 void control::begin() {
   const pid_parameters airgap_pid = {
       .m_Kp = 1.3f,
       .m_Ki = 0.5f,
       .m_Kd = 0.0f,
+      .m_Ki_min = -4.0f,
+      .m_Ki_max = 20.0f,
+      .m_ema_alpha = 0.01,
   };
   canzero_set_airgap_pid(airgap_pid);
-
-  delta_time = static_cast<float>(1.0f / pwm::frequency());
-
-  // Initalize Left airgap PID!
-  pid_left_airgap_parameters.Kp = airgap_pid.m_Kp;
-  pid_left_airgap_parameters.Ki = airgap_pid.m_Ki;
-  pid_left_airgap_parameters.Kd = airgap_pid.m_Kd;
-  pid_left_airgap_parameters.i_min = -4.0f;
-  pid_left_airgap_parameters.i_max = 20.0f;
-  pid_left_airgap_state.p_term = 0;
-  pid_left_airgap_state.i_term = 0;
-  pid_left_airgap_state.d_term = 0;
-
-  // Initalize Right airgap PID!
-  pid_right_airgap_parameters.Kp = airgap_pid.m_Kp;
-  pid_right_airgap_parameters.Ki = airgap_pid.m_Ki;
-  pid_right_airgap_parameters.Kd = airgap_pid.m_Kd;
-  pid_right_airgap_parameters.i_min = 4.0f;
-  pid_right_airgap_parameters.i_max = 20.0f;
-  pid_right_airgap_state.p_term = 0;
-  pid_right_airgap_state.i_term = 0;
-  pid_right_airgap_state.d_term = 0;
-
-  const pid_parameters current_pid = {
+  const pi_parameters current_pid = {
       .m_Kp = 5.0f,
       .m_Ki = 0.5f,
-      .m_Kd = 0.0f,
+      .m_Ki_min = -40.0f,
+      .m_Ki_max = 40.0f,
+      .m_ema_alpha = 0.5f,
   };
   canzero_set_current_pi(current_pid);
 
-  // Initalize Left current PI
-  pi_left_current_parameters.Kp = current_pid.m_Kp;
-  pi_left_current_parameters.Ki = current_pid.m_Ki;
-  pi_left_current_parameters.i_min = -40.0f;
-  pi_left_current_parameters.i_max = 40.0f;
-  pi_left_current_state.i_term = 0;
-  pi_left_current_state.p_term = 0;
-
-  // Initalize Right current PI
-  pi_right_current_parameters.Kp = current_pid.m_Kp;
-  pi_right_current_parameters.Ki = current_pid.m_Ki;
-  pi_right_current_parameters.i_min = -40.0f;
-  pi_right_current_parameters.i_max = 40.0f;
-  pi_right_current_state.p_term = 0;
-  pi_right_current_state.i_term = 0;
+  // reset also updates the globals!
+  reset();
 }
 
 GuidancePwmControl FASTRUN control::control_loop(Current current_left,
@@ -183,17 +159,15 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                         pid_right_airgap_state.d_term;
 
   // ==================== FORCE CURRENT CONVERSION ===============
-  /* const float left_current_pi_target = signed_sqrt(left_airgap_pid_output);
-   */
-  /* const float right_current_pi_target = signed_sqrt(right_airgap_pid_output);
-   */
-  const float left_current_pi_target = 5;
-  const float right_current_pi_target = 5;
-
+  const float left_current_pi_target = signed_sqrt(left_airgap_pid_output);
+  
+  const float right_current_pi_target = signed_sqrt(right_airgap_pid_output);
+  
   // ====================== CURRENT PIDs =========================
   // Left current PI
   {
     const Current target = Current(left_current_pi_target);
+    debug_left_target_current = target;
     pi_left_current_filter.push(current_left);
     const Current filtered_current = pi_left_current_filter.get();
     const float error = static_cast<float>(target - filtered_current);
@@ -211,9 +185,9 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   // Right current PI
   {
     const Current target = Current(right_current_pi_target);
+    debug_right_target_current = target;
     pi_right_current_filter.push(current_right);
     const Current filtered_current = pi_right_current_filter.get();
-    debugPrintf("filtered_current %f\n", static_cast<float>(filtered_current));
     const float error = static_cast<float>(target - filtered_current);
 
     pi_right_current_state.p_term = error * pi_right_current_parameters.Kp;
@@ -226,17 +200,27 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   float right_current_pi_output =
       pi_right_current_state.p_term + pi_right_current_state.i_term;
 
-  debugPrintf("out voltage = %f\n", right_current_pi_output);
-  debugPrintFlush();
-
   // =============== OUTPUT ==============
+
+  constexpr float CONTROL_LOWER_BOUND = -0.9f;
+  constexpr float CONTROL_UPPER_BOUND = 0.9f;
+  
+  const Voltage vdc = vdc_voltage; //avoids volatile access!
+                                   
+  // clamping here (just for debugging!) remove be on release!
+  left_current_pi_output = std::clamp(left_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc), 
+      CONTROL_UPPER_BOUND * static_cast<float>(vdc));
+  right_current_pi_output = std::clamp(right_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
+      CONTROL_UPPER_BOUND * static_cast<float>(vdc));
 
   const Voltage voltage_left_magnet = Voltage(left_current_pi_output);
   const Voltage voltage_right_magnet = Voltage(right_current_pi_output);
 
-  // TODO use vdc voltage reading
-  float controlLeft = voltage_left_magnet / 45.0_V;
-  float controlRight = voltage_right_magnet / 45.0_V;
+  debug_left_voltage = voltage_left_magnet;
+  debug_right_voltage = voltage_right_magnet;
+
+  float controlLeft = voltage_left_magnet / vdc;
+  float controlRight = voltage_right_magnet / vdc;
 
   controlLeft = std::clamp(controlLeft, -0.9f, 0.9f);
   controlRight = std::clamp(controlRight, -0.9f, 0.9f);
@@ -265,35 +249,49 @@ void control::reset() {
   pid_left_airgap_parameters.Kp = airgap_pid.m_Kp;
   pid_left_airgap_parameters.Ki = airgap_pid.m_Ki;
   pid_left_airgap_parameters.Kd = airgap_pid.m_Kd;
+  pid_left_airgap_parameters.i_min = airgap_pid.m_Ki_min;
+  pid_left_airgap_parameters.i_max = airgap_pid.m_Ki_max;
   pid_left_airgap_state.p_term = 0;
   pid_left_airgap_state.i_term = 0;
   pid_left_airgap_state.d_term = 0;
+  pid_left_airgap_state.last_error = 0;
+  pid_left_airgap_filter.set_alpha(airgap_pid.m_ema_alpha);
+  pid_left_airgap_filter.reset(Distance(canzero_get_airgap_left() * 1e-3));
 
   // Initalize Right airgap PID!
   pid_right_airgap_parameters.Kp = airgap_pid.m_Kp;
   pid_right_airgap_parameters.Ki = airgap_pid.m_Ki;
   pid_right_airgap_parameters.Kd = airgap_pid.m_Kd;
+  pid_right_airgap_parameters.i_min = airgap_pid.m_Ki_min;
+  pid_right_airgap_parameters.i_max = airgap_pid.m_Ki_max;
   pid_right_airgap_state.p_term = 0;
   pid_right_airgap_state.i_term = 0;
   pid_right_airgap_state.d_term = 0;
+  pid_right_airgap_state.last_error = 0;
+  pid_right_airgap_filter.set_alpha(airgap_pid.m_ema_alpha);
+  pid_right_airgap_filter.reset(Distance(canzero_get_airgap_left() * 1e-3));
 
-  const pid_parameters current_pid = canzero_get_current_pi();
+  const pi_parameters current_pi = canzero_get_current_pi();
 
   // Initalize Left current PI
-  pi_left_current_parameters.Kp = current_pid.m_Kp;
-  pi_left_current_parameters.Ki = current_pid.m_Ki;
-  pi_right_current_parameters.i_min = -10.0f;
-  pi_right_current_parameters.i_max = 10.0f;
+  pi_left_current_parameters.Kp = current_pi.m_Kp;
+  pi_left_current_parameters.Ki = current_pi.m_Ki;
+  pi_left_current_parameters.i_min = current_pi.m_Ki_min;
+  pi_left_current_parameters.i_max = current_pi.m_Ki_max;
   pi_left_current_state.i_term = 0;
   pi_left_current_state.p_term = 0;
+  pi_left_current_filter.set_alpha(current_pi.m_ema_alpha);
+  pi_left_current_filter.reset(Current(canzero_get_current_left()));
 
   // Initalize Right current PI
-  pi_right_current_parameters.Kp = current_pid.m_Kp;
-  pi_right_current_parameters.Ki = current_pid.m_Ki;
-  pi_right_current_parameters.i_min = -10.0f;
-  pi_right_current_parameters.i_max = 10.0f;
+  pi_right_current_parameters.Kp = current_pi.m_Kp;
+  pi_right_current_parameters.Ki = current_pi.m_Ki;
+  pi_right_current_parameters.i_min = current_pi.m_Ki_min;
+  pi_right_current_parameters.i_max = current_pi.m_Ki_max;
   pi_right_current_state.p_term = 0;
   pi_right_current_state.i_term = 0;
+  pi_right_current_filter.set_alpha(current_pi.m_ema_alpha);
+  pi_right_current_filter.reset(Current(canzero_get_current_right()));
 }
 
 void FASTRUN control::update() {
@@ -311,4 +309,10 @@ void FASTRUN control::update() {
 
   canzero_set_right_current_controller_p_term(pi_right_current_state.p_term);
   canzero_set_right_current_controller_i_term(pi_right_current_state.i_term);
+
+  canzero_set_left_airgap_controller_output(static_cast<float>(debug_left_target_current));
+  canzero_set_right_airgap_controller_output(static_cast<float>(debug_right_target_current));
+  canzero_set_left_current_controller_output(static_cast<float>(debug_left_voltage));
+  canzero_set_right_current_controller_output(static_cast<float>(debug_right_voltage));
+
 }
