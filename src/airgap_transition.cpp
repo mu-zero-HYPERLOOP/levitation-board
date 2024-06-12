@@ -1,11 +1,12 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
+#include "print.h"
 #include "util/metrics.h"
 #include "util/timestamp.h"
 #include "firmware/guidance_board.h"
 #include <cmath>
 
-static float sigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
+static constexpr float sigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
 
 struct SigmoidAnimator {
 private:
@@ -25,6 +26,7 @@ public:
 
   void transition_to(const Distance &target, const Duration &duration) {
     if ((target - m_end_airgap).abs() > 0.1_mm) {
+
       auto lck = guidance_board::InterruptLock::acquire();
       m_start_airgap = current();
       m_end_airgap = target;
@@ -48,7 +50,7 @@ public:
     }
     // map [0,1] -> [-5,5]
     const float x = alpha * 10.0f - 5.0f;
-    const float y = sigmoid(x);
+    const float y = sigmoid(x)/sigmoid(5);
     // linear interpolation between start and end.
     return m_start_airgap * (1.0f - y) + m_end_airgap * y;
   }
@@ -71,6 +73,8 @@ void airgap_transition::begin() {}
 void airgap_transition::calibrate() {
   grounded_left = Distance(canzero_get_airgap_left() * 1e-3);
   grounded_right = Distance(canzero_get_airgap_right() * 1e-3);
+  grounded_right = 12_mm;
+  grounded_left = 12_mm;
   canzero_set_target_airgap_left(grounded_left / 1_mm);
   canzero_set_target_airgap_right(grounded_right / 1_mm);
 

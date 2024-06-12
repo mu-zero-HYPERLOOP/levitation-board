@@ -16,7 +16,7 @@ static void adc_config() {
   TrigChainInfo chains[2];
   chains[0].trig_num = TRIG0;
   ain_pin chain0_pins[] = {
-      ain_pin::i_mag_r_25, ain_pin::i_mag_l_24,
+      ain_pin::i_mag_r_25, ain_pin::i_mag_l_24
   };
   chains[0].read_pins = chain0_pins;
   chains[0].chain_length = sizeof(chain0_pins) / sizeof(ain_pin);
