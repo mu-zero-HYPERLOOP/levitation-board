@@ -14,14 +14,14 @@ static DMAMEM BoxcarFilter<Distance, 100> right_filter(0_mm);
 
 static void on_left_disp(const Voltage &v) {
   const Current i = v / sensors::airgaps::R_MEAS;
-  const Distance disp = sensors::formula::displacement420(i);
+  const Distance disp = sensors::formula::displacement420(i) - 29_mm;
   left_filter.push(disp);
   canzero_set_airgap_left(left_filter.get() / 1_mm);
 }
 
 static void on_right_disp(const Voltage &v) {
   const Current i = v / sensors::airgaps::R_MEAS;
-  const Distance disp = sensors::formula::displacement420(i);
+  const Distance disp = sensors::formula::displacement420(i) - 29_mm;
   right_filter.push(disp);
   canzero_set_airgap_right(right_filter.get() / 1_mm);
 }

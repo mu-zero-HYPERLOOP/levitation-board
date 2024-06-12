@@ -43,10 +43,13 @@ void adc_etc_1_isr() {
 __attribute__((weak)) void adc_etc_done2_isr(AdcTrigRes res) {
   Serial.println("ADC ETC DONE2 interrupt triggered:");
 }
+
+volatile bool sw_trig_coco;
+
 void adc_etc_2_isr() {
   ADC_ETC_DONE2_ERR_IRQ |= done2_triggers;
-  AdcTrigRes res;
-  adc_etc_done2_isr(res);
+  sw_trig_coco = true;
+
   asm("dsb");
 }
 
@@ -213,9 +216,6 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
       NVIC_ENABLE_IRQ(IRQ_ADC_ETC1);
       break;
     case DoneInterrupt::DONE2:
-      done2_triggers |= 1 << static_cast<uint8_t>(info.chains[chain].trig_num);
-      attachInterruptVector(IRQ_ADC_ETC2, adc_etc_2_isr);
-      NVIC_ENABLE_IRQ(IRQ_ADC_ETC2);
       break;
     default:
       break;
@@ -231,23 +231,27 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
   ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_CHAIN(0);   // chain length of 1
   ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_MODE; // enable software trigger
 
-  ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_IE0(0b00); // no done interrupt
+  ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_IE0(0b11); // no done interrupt
   ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
   ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 3);
 
-    ADC2_HC7 = ADC_HC_ADCH(16);
+  ADC2_HC7 = ADC_HC_ADCH(16);
 
-    ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 7);
+  ADC_ETC_CTRL |= ADC_ETC_CTRL_TRIG_ENABLE(1 << 7);
 
-    ADC_ETC_TRIG7_CTRL = ADC_ETC_TRIG_CTRL_TRIG_PRIORITY(0); // lowest priority
-    ADC_ETC_TRIG7_CTRL |=
-        ADC_ETC_TRIG_CTRL_TRIG_CHAIN(0); // 0 -> chain length of 1
-    ADC_ETC_TRIG7_CTRL |=
-        ADC_ETC_TRIG_CTRL_TRIG_MODE; // enable software trigger
+  ADC_ETC_TRIG7_CTRL = ADC_ETC_TRIG_CTRL_TRIG_PRIORITY(0); // lowest priority
+  ADC_ETC_TRIG7_CTRL |=
+      ADC_ETC_TRIG_CTRL_TRIG_CHAIN(0);               // 0 -> chain length of 1
+  ADC_ETC_TRIG7_CTRL |= ADC_ETC_TRIG_CTRL_TRIG_MODE; // enable software trigger
 
-    ADC_ETC_TRIG7_CHAIN_1_0 = ADC_ETC_TRIG_CHAIN_IE0(0b00); // no done interrupt
-    ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
-    ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 7);
+  ADC_ETC_TRIG7_CHAIN_1_0 = ADC_ETC_TRIG_CHAIN_IE0(0b11); // no done interrupt
+  ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_B2B0;
+  ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_HWTS0(1 << 7);
+
+  done2_triggers |= 1 << static_cast<uint8_t>(3);
+  done2_triggers |= 1 << static_cast<uint8_t>(7);
+  attachInterruptVector(IRQ_ADC_ETC2, adc_etc_2_isr);
+  NVIC_ENABLE_IRQ(IRQ_ADC_ETC2);
 
   adc_etc_initalized = true;
 }
@@ -265,21 +269,21 @@ Voltage adc_etc::read_single(ain_pin pin) {
   // 0x80 & ch is the adc module : 0 -> ADC1, 1 -> ADC2.
   uint8_t ch = pin_to_channel[static_cast<uint8_t>(pin)];
   if (!(ch & 0x80)) { // use adc1
-    debugPrintf("ADC1 %u\n", ch);
-    
+
     ADC_ETC_TRIG3_CHAIN_1_0 &= ~0xF;
     ADC_ETC_TRIG3_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_CSEL0(ch & 0x7f);
 
+    sw_trig_coco = false;
     ADC_ETC_TRIG3_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
-    while (ADC1_GS & 0b1); // poll for coco.
+    while (!sw_trig_coco); // poll until coco.
     return (ADC_ETC_TRIG3_RESULT_1_0 & 0xfff) * 3.3_V / max_adc1_value;
   } else { // use adc2
-    debugPrintf("ADC1 %u\n");
     ADC_ETC_TRIG7_CHAIN_1_0 &= ~0xF;
     ADC_ETC_TRIG7_CHAIN_1_0 |= ADC_ETC_TRIG_CHAIN_CSEL0(ch & 0x7f);
 
+    sw_trig_coco = false;
     ADC_ETC_TRIG7_CTRL |= ADC_ETC_TRIG_CTRL_SW_TRIG; // trigger a conversion
-    while (ADC2_GS & 0b1); // poll for coco.
+    while (!sw_trig_coco); // poll until coco.
     return (ADC_ETC_TRIG7_RESULT_1_0 & 0xfff) * 3.3_V / max_adc2_value;
   }
 }

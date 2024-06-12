@@ -47,15 +47,13 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   const Voltage v_disp_sense_mag_r = res.trig_res(TRIG4, 0); 
   const Voltage v_disp_sense_mag_l = res.trig_res(TRIG4, 1); 
-
-  /* debugPrintf("airgap_left   = %f\n", static_cast<float>(v_disp_sense_mag_l)); */
-  /* debugPrintf("airgap_right  = %f\n", static_cast<float>(v_disp_sense_mag_r)); */
-  /*  */
-  /* debugPrintf("current_left  = %f\n", static_cast<float>(v_i_mag_l)); */
-  /* debugPrintf("current_right = %f\n", static_cast<float>(v_i_mag_r)); */
-  /*  */
-  /*  */
-  /* debugPrintFlush(); */
+  
+  debugPrintf("current_left  = %f\n", static_cast<float>(v_i_mag_l));
+  debugPrintf("current_right = %f\n", static_cast<float>(v_i_mag_r));
+  
+  
+  debugPrintFlush();
+  return;
 
   // Current sense
   const Current i_mag_r =
