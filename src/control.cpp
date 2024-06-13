@@ -84,19 +84,25 @@ void control::begin() {
       .m_Kp = 1.3f,
       .m_Ki = 0.5f,
       .m_Kd = 0.0f,
+  };
+  canzero_set_airgap_pid(airgap_pid);
+  const pid_parameters_extra airgap_pid_extra = { 
       .m_Ki_min = -4.0f,
       .m_Ki_max = 20.0f,
       .m_ema_alpha = 0.01,
   };
-  canzero_set_airgap_pid(airgap_pid);
-  const pi_parameters current_pid = {
+  canzero_set_airgap_pid_extra(airgap_pid_extra);
+  const pi_parameters current_pi = {
       .m_Kp = 5.0f,
       .m_Ki = 0.5f,
+  };
+  canzero_set_current_pi(current_pi);
+  const pi_parameters_extra current_pi_extra = {
       .m_Ki_min = -40.0f,
       .m_Ki_max = 40.0f,
       .m_ema_alpha = 0.5f,
   };
-  canzero_set_current_pi(current_pid);
+  canzero_set_current_pi_extra(current_pi_extra);
 
   // reset also updates the globals!
   reset();
@@ -106,10 +112,6 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                                  Current current_right,
                                                  Distance magnet_airgap_left,
                                                  Distance magnet_airgap_right) {
-
-  debugPrintf("current right %f\n", static_cast<float>(current_right));
-  debugPrintf("airgap  right %f\n", static_cast<float>(magnet_airgap_right));
-
   // ====================== AIRGAP PIDs =========================
 
   // Left airgap PID
@@ -242,6 +244,7 @@ void control::reset() {
   return;
   auto _lck = guidance_board::InterruptLock::acquire();
   const pid_parameters airgap_pid = canzero_get_airgap_pid();
+  const pid_parameters_extra airgap_pid_extra = canzero_get_airgap_pid_extra();
 
   delta_time = static_cast<float>(1.0f / pwm::frequency());
 
@@ -249,48 +252,49 @@ void control::reset() {
   pid_left_airgap_parameters.Kp = airgap_pid.m_Kp;
   pid_left_airgap_parameters.Ki = airgap_pid.m_Ki;
   pid_left_airgap_parameters.Kd = airgap_pid.m_Kd;
-  pid_left_airgap_parameters.i_min = airgap_pid.m_Ki_min;
-  pid_left_airgap_parameters.i_max = airgap_pid.m_Ki_max;
+  pid_left_airgap_parameters.i_min = airgap_pid_extra.m_Ki_min;
+  pid_left_airgap_parameters.i_max = airgap_pid_extra.m_Ki_max;
   pid_left_airgap_state.p_term = 0;
   pid_left_airgap_state.i_term = 0;
   pid_left_airgap_state.d_term = 0;
   pid_left_airgap_state.last_error = 0;
-  pid_left_airgap_filter.set_alpha(airgap_pid.m_ema_alpha);
+  pid_left_airgap_filter.set_alpha(airgap_pid_extra.m_ema_alpha);
   pid_left_airgap_filter.reset(Distance(canzero_get_airgap_left() * 1e-3));
 
   // Initalize Right airgap PID!
   pid_right_airgap_parameters.Kp = airgap_pid.m_Kp;
   pid_right_airgap_parameters.Ki = airgap_pid.m_Ki;
   pid_right_airgap_parameters.Kd = airgap_pid.m_Kd;
-  pid_right_airgap_parameters.i_min = airgap_pid.m_Ki_min;
-  pid_right_airgap_parameters.i_max = airgap_pid.m_Ki_max;
+  pid_right_airgap_parameters.i_min = airgap_pid_extra.m_Ki_min;
+  pid_right_airgap_parameters.i_max = airgap_pid_extra.m_Ki_max;
   pid_right_airgap_state.p_term = 0;
   pid_right_airgap_state.i_term = 0;
   pid_right_airgap_state.d_term = 0;
   pid_right_airgap_state.last_error = 0;
-  pid_right_airgap_filter.set_alpha(airgap_pid.m_ema_alpha);
+  pid_right_airgap_filter.set_alpha(airgap_pid_extra.m_ema_alpha);
   pid_right_airgap_filter.reset(Distance(canzero_get_airgap_left() * 1e-3));
 
   const pi_parameters current_pi = canzero_get_current_pi();
+  const pi_parameters_extra current_pi_extra = canzero_get_current_pi_extra();
 
   // Initalize Left current PI
   pi_left_current_parameters.Kp = current_pi.m_Kp;
   pi_left_current_parameters.Ki = current_pi.m_Ki;
-  pi_left_current_parameters.i_min = current_pi.m_Ki_min;
-  pi_left_current_parameters.i_max = current_pi.m_Ki_max;
+  pi_left_current_parameters.i_min = current_pi_extra.m_Ki_min;
+  pi_left_current_parameters.i_max = current_pi_extra.m_Ki_max;
   pi_left_current_state.i_term = 0;
   pi_left_current_state.p_term = 0;
-  pi_left_current_filter.set_alpha(current_pi.m_ema_alpha);
+  pi_left_current_filter.set_alpha(current_pi_extra.m_ema_alpha);
   pi_left_current_filter.reset(Current(canzero_get_current_left()));
 
   // Initalize Right current PI
   pi_right_current_parameters.Kp = current_pi.m_Kp;
   pi_right_current_parameters.Ki = current_pi.m_Ki;
-  pi_right_current_parameters.i_min = current_pi.m_Ki_min;
-  pi_right_current_parameters.i_max = current_pi.m_Ki_max;
+  pi_right_current_parameters.i_min = current_pi_extra.m_Ki_min;
+  pi_right_current_parameters.i_max = current_pi_extra.m_Ki_max;
   pi_right_current_state.p_term = 0;
   pi_right_current_state.i_term = 0;
-  pi_right_current_filter.set_alpha(current_pi.m_ema_alpha);
+  pi_right_current_filter.set_alpha(current_pi_extra.m_ema_alpha);
   pi_right_current_filter.reset(Current(canzero_get_current_right()));
 }
 

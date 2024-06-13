@@ -105,20 +105,24 @@ typedef struct {
   bool_t m_ignore_error;
 } error_level_config;
 typedef struct {
-  double m_Kp;
-  double m_Ki;
-  double m_Kd;
-  double m_Ki_min;
-  double m_Ki_max;
-  double m_ema_alpha;
+  float m_Kp;
+  float m_Ki;
+  float m_Kd;
 } pid_parameters;
 typedef struct {
-  double m_Kp;
-  double m_Ki;
-  double m_Ki_min;
-  double m_Ki_max;
-  double m_ema_alpha;
+  float m_Ki_min;
+  float m_Ki_max;
+  float m_ema_alpha;
+} pid_parameters_extra;
+typedef struct {
+  float m_Kp;
+  float m_Ki;
 } pi_parameters;
+typedef struct {
+  float m_Ki_min;
+  float m_Ki_max;
+  float m_ema_alpha;
+} pi_parameters_extra;
 typedef struct {
   uint32_t id;
   uint8_t dlc;
@@ -338,9 +342,17 @@ static inline pid_parameters canzero_get_airgap_pid() {
   extern pid_parameters __oe_airgap_pid;
   return __oe_airgap_pid;
 }
+static inline pid_parameters_extra canzero_get_airgap_pid_extra() {
+  extern pid_parameters_extra __oe_airgap_pid_extra;
+  return __oe_airgap_pid_extra;
+}
 static inline pi_parameters canzero_get_current_pi() {
   extern pi_parameters __oe_current_pi;
   return __oe_current_pi;
+}
+static inline pi_parameters_extra canzero_get_current_pi_extra() {
+  extern pi_parameters_extra __oe_current_pi_extra;
+  return __oe_current_pi_extra;
 }
 static inline float canzero_get_left_airgap_controller_p_term() {
   extern float __oe_left_airgap_controller_p_term;
@@ -695,9 +707,19 @@ static inline void canzero_set_airgap_pid(pid_parameters value){
   __oe_airgap_pid = value;
 }
 
+static inline void canzero_set_airgap_pid_extra(pid_parameters_extra value){
+  extern pid_parameters_extra __oe_airgap_pid_extra;
+  __oe_airgap_pid_extra = value;
+}
+
 static inline void canzero_set_current_pi(pi_parameters value){
   extern pi_parameters __oe_current_pi;
   __oe_current_pi = value;
+}
+
+static inline void canzero_set_current_pi_extra(pi_parameters_extra value){
+  extern pi_parameters_extra __oe_current_pi_extra;
+  __oe_current_pi_extra = value;
 }
 
 static inline void canzero_set_left_airgap_controller_p_term(float value){
@@ -868,7 +890,11 @@ void canzero_send_gamepad_x_down();
 
 void canzero_send_airgap_pid();
 
+void canzero_send_airgap_pid_extra();
+
 void canzero_send_current_pi();
+
+void canzero_send_current_pi_extra();
 
 void canzero_send_left_airgap_controller_p_term();
 
