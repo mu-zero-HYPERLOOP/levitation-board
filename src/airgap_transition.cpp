@@ -73,8 +73,6 @@ void airgap_transition::begin() {}
 void airgap_transition::calibrate() {
   grounded_left = Distance(canzero_get_airgap_left() * 1e-3);
   grounded_right = Distance(canzero_get_airgap_right() * 1e-3);
-  grounded_right = 12_mm;
-  grounded_left = 12_mm;
   canzero_set_target_airgap_left(grounded_left / 1_mm);
   canzero_set_target_airgap_right(grounded_right / 1_mm);
 

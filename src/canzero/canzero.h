@@ -105,23 +105,23 @@ typedef struct {
   bool_t m_ignore_error;
 } error_level_config;
 typedef struct {
-  float m_Kp;
-  float m_Ki;
-  float m_Kd;
+  double m_Kp;
+  double m_Ki;
+  double m_Kd;
 } pid_parameters;
 typedef struct {
-  float m_Ki_min;
-  float m_Ki_max;
-  float m_ema_alpha;
+  double m_Ki_min;
+  double m_Ki_max;
+  double m_ema_alpha;
 } pid_parameters_extra;
 typedef struct {
-  float m_Kp;
-  float m_Ki;
+  double m_Kp;
+  double m_Ki;
 } pi_parameters;
 typedef struct {
-  float m_Ki_min;
-  float m_Ki_max;
-  float m_ema_alpha;
+  double m_Ki_min;
+  double m_Ki_max;
+  double m_ema_alpha;
 } pi_parameters_extra;
 typedef struct {
   uint32_t id;

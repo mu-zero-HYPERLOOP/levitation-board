@@ -9,8 +9,8 @@ static constexpr bool ENABLE_PWM2_SM0 = false; // pins 4, 33   -          - U1
 static constexpr bool ENABLE_PWM2_SM2 = true;  // pins 6 , 9   - LEFT_L   - V2
 static constexpr bool ENABLE_PWM2_SM3 = false; // pins 36, 37  -          - U2
 static constexpr bool ENABLE_PWM4_SM2 = true;  // pins 2 , 3   - LEFT_R   - W2
-static constexpr bool ENABLE_PWM3_SM1 = true;  // pins 29, 28  - RIGHT_L  - W1
-static constexpr bool ENABLE_PWM1_SM3 = true;  // pins 8 , 7   - RIGHT_R  - V1
+static constexpr bool ENABLE_PWM3_SM1 = true;  // pins 29, 28  - RIGHT_R  - W1
+static constexpr bool ENABLE_PWM1_SM3 = true;  // pins 8 , 7   - RIGHT_L  - V1
 
 struct PwmControl {
   float duty20;

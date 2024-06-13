@@ -57,11 +57,11 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   const Current i_disp_sense_mag_l = v_disp_sense_mag_l / DISP_MEAS_R;
   const Distance disp_sense_mag_l =
-      sensors::formula::displacement420(i_disp_sense_mag_l);
+      sensors::formula::displacement420(i_disp_sense_mag_l) - 29_mm;
 
   const Current i_disp_sense_mag_r = v_disp_sense_mag_r / DISP_MEAS_R;
   const Distance disp_sense_mag_r =
-      sensors::formula::displacement420(i_disp_sense_mag_r);
+      sensors::formula::displacement420(i_disp_sense_mag_r) - 29_mm;
 
   const GuidancePwmControl pwmControl = control::control_loop(
       i_mag_l, i_mag_r, disp_sense_mag_l, disp_sense_mag_r);

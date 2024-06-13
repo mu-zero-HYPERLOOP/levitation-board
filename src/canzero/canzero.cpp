@@ -593,7 +593,7 @@ static void schedule_voltage_and_currents_interval_job(){
   scheduler_schedule(&voltage_and_currents_interval_job);
 }
 static job_t airgaps_interval_job;
-static const uint32_t airgaps_interval = 100;
+static const uint32_t airgaps_interval = 10;
 static void schedule_airgaps_interval_job(){
   uint32_t time = canzero_get_time();
   airgaps_interval_job.climax = time + airgaps_interval;
@@ -706,7 +706,7 @@ static void schedule_jobs(uint32_t time) {
       }
       case 3: {
         job->job.stream_job.last_schedule = time;
-        scheduler_reschedule(time + 100);
+        scheduler_reschedule(time + 10);
         canzero_exit_critical();
         canzero_message_levitation_board1_stream_airgaps stream_message;
         stream_message.m_airgap_left = __oe_airgap_left;
@@ -715,7 +715,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_target_airgap_right = __oe_target_airgap_right;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_levitation_board1_stream_airgaps(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 4: {
@@ -756,7 +756,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_left_current_controller_output = __oe_left_current_controller_output;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_levitation_board1_stream_controller_debug_3(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 7: {
@@ -769,7 +769,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_right_current_controller_output = __oe_right_current_controller_output;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_levitation_board1_stream_controller_debug_4(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
         default:
@@ -871,10 +871,10 @@ static uint32_t DMAMEM __oe_error_level_config_magnet_current_rx_fragmentation_b
 static uint32_t DMAMEM __oe_error_level_config_input_current_rx_fragmentation_buffer[7];
 static uint32_t DMAMEM __oe_error_level_config_magnet_temperature_rx_fragmentation_buffer[7];
 static uint32_t DMAMEM __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[7];
-static uint32_t DMAMEM __oe_airgap_pid_rx_fragmentation_buffer[3];
-static uint32_t DMAMEM __oe_airgap_pid_extra_rx_fragmentation_buffer[3];
-static uint32_t DMAMEM __oe_current_pi_rx_fragmentation_buffer[2];
-static uint32_t DMAMEM __oe_current_pi_extra_rx_fragmentation_buffer[3];
+static uint32_t DMAMEM __oe_airgap_pid_rx_fragmentation_buffer[6];
+static uint32_t DMAMEM __oe_airgap_pid_extra_rx_fragmentation_buffer[6];
+static uint32_t DMAMEM __oe_current_pi_rx_fragmentation_buffer[4];
+static uint32_t DMAMEM __oe_current_pi_extra_rx_fragmentation_buffer[6];
 static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
   canzero_message_get_req msg;
   canzero_deserialize_canzero_message_get_req(frame, &msg);
@@ -1289,50 +1289,83 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
     break;
   }
   case 48: {
-    __oe_airgap_pid_rx_fragmentation_buffer[0] = (min_u32((__oe_airgap_pid.m_Kp - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_airgap_pid_rx_fragmentation_buffer[1] = (min_u32((__oe_airgap_pid.m_Ki - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_airgap_pid_rx_fragmentation_buffer[2] = (min_u32((__oe_airgap_pid.m_Kd - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+    {
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_rx_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_rx_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_rx_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_rx_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+    }
     resp.m_data = __oe_airgap_pid_rx_fragmentation_buffer[0];
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 0;
     resp.m_header.m_toggle = 0;
-    schedule_get_resp_fragmentation_job(__oe_airgap_pid_rx_fragmentation_buffer, 3, 48, msg.m_header.m_client_id);
+    schedule_get_resp_fragmentation_job(__oe_airgap_pid_rx_fragmentation_buffer, 6, 48, msg.m_header.m_client_id);
     break;
   }
   case 49: {
-    __oe_airgap_pid_extra_rx_fragmentation_buffer[0] = (min_u32((__oe_airgap_pid_extra.m_Ki_min - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_airgap_pid_extra_rx_fragmentation_buffer[1] = (min_u32((__oe_airgap_pid_extra.m_Ki_max - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_airgap_pid_extra_rx_fragmentation_buffer[2] = (min_u32((__oe_airgap_pid_extra.m_ema_alpha - ((float)0)) / (float)0.00000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+    {
+      uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_Ki_min - ((double)-500)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_Ki_max - ((double)0)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_ema_alpha - ((double)0)) / (double)0.00000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+      __oe_airgap_pid_extra_rx_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+    }
     resp.m_data = __oe_airgap_pid_extra_rx_fragmentation_buffer[0];
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 0;
     resp.m_header.m_toggle = 0;
-    schedule_get_resp_fragmentation_job(__oe_airgap_pid_extra_rx_fragmentation_buffer, 3, 49, msg.m_header.m_client_id);
+    schedule_get_resp_fragmentation_job(__oe_airgap_pid_extra_rx_fragmentation_buffer, 6, 49, msg.m_header.m_client_id);
     break;
   }
   case 50: {
-    __oe_current_pi_rx_fragmentation_buffer[0] = (min_u32((__oe_current_pi.m_Kp - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_current_pi_rx_fragmentation_buffer[1] = (min_u32((__oe_current_pi.m_Ki - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+    {
+      uint64_t masked = (min_u64((__oe_current_pi.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_current_pi_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_current_pi_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_current_pi.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_current_pi_rx_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+      __oe_current_pi_rx_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+    }
     resp.m_data = __oe_current_pi_rx_fragmentation_buffer[0];
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 0;
     resp.m_header.m_toggle = 0;
-    schedule_get_resp_fragmentation_job(__oe_current_pi_rx_fragmentation_buffer, 2, 50, msg.m_header.m_client_id);
+    schedule_get_resp_fragmentation_job(__oe_current_pi_rx_fragmentation_buffer, 4, 50, msg.m_header.m_client_id);
     break;
   }
   case 51: {
-    __oe_current_pi_extra_rx_fragmentation_buffer[0] = (min_u32((__oe_current_pi_extra.m_Ki_min - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_current_pi_extra_rx_fragmentation_buffer[1] = (min_u32((__oe_current_pi_extra.m_Ki_max - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-    __oe_current_pi_extra_rx_fragmentation_buffer[2] = (min_u32((__oe_current_pi_extra.m_ema_alpha - ((float)0)) / (float)0.00000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+    {
+      uint64_t masked = (min_u64((__oe_current_pi_extra.m_Ki_min - ((double)-500)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_current_pi_extra_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_current_pi_extra_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_current_pi_extra.m_Ki_max - ((double)0)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_current_pi_extra_rx_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+      __oe_current_pi_extra_rx_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+    }    {
+      uint64_t masked = (min_u64((__oe_current_pi_extra.m_ema_alpha - ((double)0)) / (double)0.00000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_current_pi_extra_rx_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+      __oe_current_pi_extra_rx_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+    }
     resp.m_data = __oe_current_pi_extra_rx_fragmentation_buffer[0];
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 0;
     resp.m_header.m_toggle = 0;
-    schedule_get_resp_fragmentation_job(__oe_current_pi_extra_rx_fragmentation_buffer, 3, 51, msg.m_header.m_client_id);
+    schedule_get_resp_fragmentation_job(__oe_current_pi_extra_rx_fragmentation_buffer, 6, 51, msg.m_header.m_client_id);
     break;
   }
   case 52: {
@@ -1455,13 +1488,13 @@ static uint32_t DMAMEM error_level_config_magnet_temperature_tmp_tx_fragmentatio
 static uint32_t DMAMEM error_level_config_magnet_temperature_tmp_tx_fragmentation_offset = 0;
 static uint32_t DMAMEM error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[7];
 static uint32_t DMAMEM error_level_config_mcu_temperature_tmp_tx_fragmentation_offset = 0;
-static uint32_t DMAMEM airgap_pid_tmp_tx_fragmentation_buffer[3];
+static uint32_t DMAMEM airgap_pid_tmp_tx_fragmentation_buffer[6];
 static uint32_t DMAMEM airgap_pid_tmp_tx_fragmentation_offset = 0;
-static uint32_t DMAMEM airgap_pid_extra_tmp_tx_fragmentation_buffer[3];
+static uint32_t DMAMEM airgap_pid_extra_tmp_tx_fragmentation_buffer[6];
 static uint32_t DMAMEM airgap_pid_extra_tmp_tx_fragmentation_offset = 0;
-static uint32_t DMAMEM current_pi_tmp_tx_fragmentation_buffer[2];
+static uint32_t DMAMEM current_pi_tmp_tx_fragmentation_buffer[4];
 static uint32_t DMAMEM current_pi_tmp_tx_fragmentation_offset = 0;
-static uint32_t DMAMEM current_pi_extra_tmp_tx_fragmentation_buffer[3];
+static uint32_t DMAMEM current_pi_extra_tmp_tx_fragmentation_buffer[6];
 static uint32_t DMAMEM current_pi_extra_tmp_tx_fragmentation_offset = 0;
 static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
   canzero_message_set_req msg;
@@ -2040,7 +2073,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       airgap_pid_tmp_tx_fragmentation_offset = 0;
     }else {
       airgap_pid_tmp_tx_fragmentation_offset += 1;
-      if (airgap_pid_tmp_tx_fragmentation_offset >= 3) {
+      if (airgap_pid_tmp_tx_fragmentation_offset >= 6) {
         return;
       }
     }
@@ -2049,9 +2082,9 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pid_parameters airgap_pid_tmp;
-    airgap_pid_tmp.m_Kp = ((airgap_pid_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 32)))) * 0.000000023283064370807974 + 0;
-    airgap_pid_tmp.m_Ki = ((airgap_pid_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) * 0.000000023283064370807974 + 0;
-    airgap_pid_tmp.m_Kd = ((airgap_pid_tmp_tx_fragmentation_buffer[2] & (0xFFFFFFFF >> (32 - 32)))) * 0.000000023283064370807974 + 0;
+    airgap_pid_tmp.m_Kp = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
+    airgap_pid_tmp.m_Ki = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
+    airgap_pid_tmp.m_Kd = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[4] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
     canzero_set_airgap_pid(airgap_pid_tmp);
     break;
   }
@@ -2063,7 +2096,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       airgap_pid_extra_tmp_tx_fragmentation_offset = 0;
     }else {
       airgap_pid_extra_tmp_tx_fragmentation_offset += 1;
-      if (airgap_pid_extra_tmp_tx_fragmentation_offset >= 3) {
+      if (airgap_pid_extra_tmp_tx_fragmentation_offset >= 6) {
         return;
       }
     }
@@ -2072,9 +2105,9 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pid_parameters_extra airgap_pid_extra_tmp;
-    airgap_pid_extra_tmp.m_Ki_min = ((airgap_pid_extra_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000023283064370807974 + -500;
-    airgap_pid_extra_tmp.m_Ki_max = ((airgap_pid_extra_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000023283064370807974 + -500;
-    airgap_pid_extra_tmp.m_ema_alpha = ((airgap_pid_extra_tmp_tx_fragmentation_buffer[2] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000000023283064370807974 + 0;
+    airgap_pid_extra_tmp.m_Ki_min = ((uint64_t)airgap_pid_extra_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(airgap_pid_extra_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000002710505431213761 + -500;
+    airgap_pid_extra_tmp.m_Ki_max = ((uint64_t)airgap_pid_extra_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(airgap_pid_extra_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000002710505431213761 + 0;
+    airgap_pid_extra_tmp.m_ema_alpha = ((uint64_t)airgap_pid_extra_tmp_tx_fragmentation_buffer[4] | (((uint64_t)(airgap_pid_extra_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000000005421010862427522 + 0;
     canzero_set_airgap_pid_extra(airgap_pid_extra_tmp);
     break;
   }
@@ -2086,7 +2119,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       current_pi_tmp_tx_fragmentation_offset = 0;
     }else {
       current_pi_tmp_tx_fragmentation_offset += 1;
-      if (current_pi_tmp_tx_fragmentation_offset >= 2) {
+      if (current_pi_tmp_tx_fragmentation_offset >= 4) {
         return;
       }
     }
@@ -2095,8 +2128,8 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pi_parameters current_pi_tmp;
-    current_pi_tmp.m_Kp = ((current_pi_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 32)))) * 0.000000023283064370807974 + 0;
-    current_pi_tmp.m_Ki = ((current_pi_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) * 0.000000023283064370807974 + 0;
+    current_pi_tmp.m_Kp = ((uint64_t)current_pi_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(current_pi_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
+    current_pi_tmp.m_Ki = ((uint64_t)current_pi_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(current_pi_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
     canzero_set_current_pi(current_pi_tmp);
     break;
   }
@@ -2108,7 +2141,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       current_pi_extra_tmp_tx_fragmentation_offset = 0;
     }else {
       current_pi_extra_tmp_tx_fragmentation_offset += 1;
-      if (current_pi_extra_tmp_tx_fragmentation_offset >= 3) {
+      if (current_pi_extra_tmp_tx_fragmentation_offset >= 6) {
         return;
       }
     }
@@ -2117,9 +2150,9 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pi_parameters_extra current_pi_extra_tmp;
-    current_pi_extra_tmp.m_Ki_min = ((current_pi_extra_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000023283064370807974 + -500;
-    current_pi_extra_tmp.m_Ki_max = ((current_pi_extra_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000023283064370807974 + -500;
-    current_pi_extra_tmp.m_ema_alpha = ((current_pi_extra_tmp_tx_fragmentation_buffer[2] & (0xFFFFFFFF >> (32 - 32)))) * 0.00000000023283064370807974 + 0;
+    current_pi_extra_tmp.m_Ki_min = ((uint64_t)current_pi_extra_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(current_pi_extra_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000002710505431213761 + -500;
+    current_pi_extra_tmp.m_Ki_max = ((uint64_t)current_pi_extra_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(current_pi_extra_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000002710505431213761 + 0;
+    current_pi_extra_tmp.m_ema_alpha = ((uint64_t)current_pi_extra_tmp_tx_fragmentation_buffer[4] | (((uint64_t)(current_pi_extra_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000000005421010862427522 + 0;
     canzero_set_current_pi_extra(current_pi_extra_tmp);
     break;
   }
@@ -2316,9 +2349,6 @@ void canzero_can0_poll() {
   canzero_frame frame;
   while (canzero_can0_recv(&frame)) {
     switch (frame.id) {
-      case 0xDE:
-        canzero_handle_set_req(&frame);
-        break;
       case 0xE6:
         canzero_handle_heartbeat_can0(&frame);
         break;
@@ -2331,6 +2361,9 @@ void canzero_can1_poll() {
     switch (frame.id) {
       case 0xBE:
         canzero_handle_get_req(&frame);
+        break;
+      case 0xDE:
+        canzero_handle_set_req(&frame);
         break;
       case 0x43:
         canzero_handle_mother_board_stream_levitation_command(&frame);
@@ -2396,7 +2429,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 4408918250690572610ull;
+  __oe_config_hash = 13322069764220952265ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -2589,10 +2622,10 @@ static uint32_t DMAMEM __oe_error_level_config_magnet_current_send_fragmentation
 static uint32_t DMAMEM __oe_error_level_config_input_current_send_fragmentation_buffer[7];
 static uint32_t DMAMEM __oe_error_level_config_magnet_temperature_send_fragmentation_buffer[7];
 static uint32_t DMAMEM __oe_error_level_config_mcu_temperature_send_fragmentation_buffer[7];
-static uint32_t DMAMEM __oe_airgap_pid_send_fragmentation_buffer[3];
-static uint32_t DMAMEM __oe_airgap_pid_extra_send_fragmentation_buffer[3];
-static uint32_t DMAMEM __oe_current_pi_send_fragmentation_buffer[2];
-static uint32_t DMAMEM __oe_current_pi_extra_send_fragmentation_buffer[3];
+static uint32_t DMAMEM __oe_airgap_pid_send_fragmentation_buffer[6];
+static uint32_t DMAMEM __oe_airgap_pid_extra_send_fragmentation_buffer[6];
+static uint32_t DMAMEM __oe_current_pi_send_fragmentation_buffer[4];
+static uint32_t DMAMEM __oe_current_pi_extra_send_fragmentation_buffer[6];
 void canzero_send_config_hash() {
   canzero_message_get_resp msg;
   {
@@ -3295,10 +3328,19 @@ void canzero_send_gamepad_x_down() {
 }
 void canzero_send_airgap_pid() {
   canzero_message_get_resp msg;
-  __oe_airgap_pid_send_fragmentation_buffer[0] = (min_u32((__oe_airgap_pid.m_Kp - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_airgap_pid_send_fragmentation_buffer[1] = (min_u32((__oe_airgap_pid.m_Ki - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_airgap_pid_send_fragmentation_buffer[2] = (min_u32((__oe_airgap_pid.m_Kd - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+  {
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_send_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_send_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_send_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_send_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_send_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_send_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+  }
   msg.m_data = __oe_airgap_pid_send_fragmentation_buffer[0];
   msg.m_header.m_eof = 0;
   msg.m_header.m_sof = 1;
@@ -3309,15 +3351,24 @@ void canzero_send_airgap_pid() {
   canzero_frame sender_frame;
   canzero_serialize_canzero_message_get_resp(&msg, &sender_frame);
   canzero_can0_send(&sender_frame);
-  schedule_get_resp_fragmentation_job(__oe_airgap_pid_send_fragmentation_buffer, 3, 48, 255);
+  schedule_get_resp_fragmentation_job(__oe_airgap_pid_send_fragmentation_buffer, 6, 48, 255);
 
 }
 void canzero_send_airgap_pid_extra() {
   canzero_message_get_resp msg;
-  __oe_airgap_pid_extra_send_fragmentation_buffer[0] = (min_u32((__oe_airgap_pid_extra.m_Ki_min - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_airgap_pid_extra_send_fragmentation_buffer[1] = (min_u32((__oe_airgap_pid_extra.m_Ki_max - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_airgap_pid_extra_send_fragmentation_buffer[2] = (min_u32((__oe_airgap_pid_extra.m_ema_alpha - ((float)0)) / (float)0.00000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+  {
+    uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_Ki_min - ((double)-500)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_extra_send_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_extra_send_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_Ki_max - ((double)0)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_extra_send_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_extra_send_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_airgap_pid_extra.m_ema_alpha - ((double)0)) / (double)0.00000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_airgap_pid_extra_send_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+    __oe_airgap_pid_extra_send_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+  }
   msg.m_data = __oe_airgap_pid_extra_send_fragmentation_buffer[0];
   msg.m_header.m_eof = 0;
   msg.m_header.m_sof = 1;
@@ -3328,14 +3379,20 @@ void canzero_send_airgap_pid_extra() {
   canzero_frame sender_frame;
   canzero_serialize_canzero_message_get_resp(&msg, &sender_frame);
   canzero_can0_send(&sender_frame);
-  schedule_get_resp_fragmentation_job(__oe_airgap_pid_extra_send_fragmentation_buffer, 3, 49, 255);
+  schedule_get_resp_fragmentation_job(__oe_airgap_pid_extra_send_fragmentation_buffer, 6, 49, 255);
 
 }
 void canzero_send_current_pi() {
   canzero_message_get_resp msg;
-  __oe_current_pi_send_fragmentation_buffer[0] = (min_u32((__oe_current_pi.m_Kp - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_current_pi_send_fragmentation_buffer[1] = (min_u32((__oe_current_pi.m_Ki - ((float)0)) / (float)0.000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+  {
+    uint64_t masked = (min_u64((__oe_current_pi.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_current_pi_send_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+    __oe_current_pi_send_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_current_pi.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_current_pi_send_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+    __oe_current_pi_send_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+  }
   msg.m_data = __oe_current_pi_send_fragmentation_buffer[0];
   msg.m_header.m_eof = 0;
   msg.m_header.m_sof = 1;
@@ -3346,15 +3403,24 @@ void canzero_send_current_pi() {
   canzero_frame sender_frame;
   canzero_serialize_canzero_message_get_resp(&msg, &sender_frame);
   canzero_can0_send(&sender_frame);
-  schedule_get_resp_fragmentation_job(__oe_current_pi_send_fragmentation_buffer, 2, 50, 255);
+  schedule_get_resp_fragmentation_job(__oe_current_pi_send_fragmentation_buffer, 4, 50, 255);
 
 }
 void canzero_send_current_pi_extra() {
   canzero_message_get_resp msg;
-  __oe_current_pi_extra_send_fragmentation_buffer[0] = (min_u32((__oe_current_pi_extra.m_Ki_min - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_current_pi_extra_send_fragmentation_buffer[1] = (min_u32((__oe_current_pi_extra.m_Ki_max - ((float)-500)) / (float)0.00000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-  __oe_current_pi_extra_send_fragmentation_buffer[2] = (min_u32((__oe_current_pi_extra.m_ema_alpha - ((float)0)) / (float)0.00000000023283064370807974, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
-
+  {
+    uint64_t masked = (min_u64((__oe_current_pi_extra.m_Ki_min - ((double)-500)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_current_pi_extra_send_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+    __oe_current_pi_extra_send_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_current_pi_extra.m_Ki_max - ((double)0)) / (double)0.00000000000000002710505431213761, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_current_pi_extra_send_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
+    __oe_current_pi_extra_send_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
+  }  {
+    uint64_t masked = (min_u64((__oe_current_pi_extra.m_ema_alpha - ((double)0)) / (double)0.00000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    __oe_current_pi_extra_send_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
+    __oe_current_pi_extra_send_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
+  }
   msg.m_data = __oe_current_pi_extra_send_fragmentation_buffer[0];
   msg.m_header.m_eof = 0;
   msg.m_header.m_sof = 1;
@@ -3365,7 +3431,7 @@ void canzero_send_current_pi_extra() {
   canzero_frame sender_frame;
   canzero_serialize_canzero_message_get_resp(&msg, &sender_frame);
   canzero_can0_send(&sender_frame);
-  schedule_get_resp_fragmentation_job(__oe_current_pi_extra_send_fragmentation_buffer, 3, 51, 255);
+  schedule_get_resp_fragmentation_job(__oe_current_pi_extra_send_fragmentation_buffer, 6, 51, 255);
 
 }
 void canzero_send_left_airgap_controller_p_term() {

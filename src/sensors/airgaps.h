@@ -11,6 +11,9 @@ void begin();
 
 void calibrate();
 
+Distance conv_left(Voltage v);
+Distance conv_right(Voltage v);
+
 void update();
 
 }
