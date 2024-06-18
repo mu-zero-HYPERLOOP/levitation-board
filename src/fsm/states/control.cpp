@@ -5,7 +5,7 @@
 #include "precharge_mosfet.h"
 #include "sdc_brake.h"
 
-constexpr Time TRANSITION_TIME = 6_s;
+constexpr Time TRANSITION_TIME = 0_s;
 
 levitation_state fsm::states::control(levitation_command cmd, Duration time_since_last_transition) {
 

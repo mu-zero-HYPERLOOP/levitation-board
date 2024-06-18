@@ -3,7 +3,9 @@
 #include "canzero/canzero.h"
 #include "firmware/guidance_board.h"
 #include "print.h"
+#include "sdc_brake.h"
 #include "util/csv.h"
+#include "util/dist_estimation.h"
 #include "util/ema.h"
 #include "util/metrics.h"
 #include "util/rectange_integral.h"
@@ -35,6 +37,7 @@ struct PID_state {
   float p_term = 0.0f;
   float i_term = 0.0f;
   float d_term = 0.0f;
+  float state_deriviative = 0.0f;
 };
 
 struct PI_parameters {
@@ -79,6 +82,27 @@ static Voltage debug_right_voltage = 0_V;
 static Current debug_left_target_current = 0_A;
 static Current debug_right_target_current = 0_A;
 
+// Error handling
+static Timestamp last_airgap_left_ok;
+static Timestamp last_airgap_right_ok;
+static Distance airgap_error_thresh = 5_mm;
+static Duration airgap_timeout = 1_ms;
+
+static Timestamp last_current_left_ok;
+static Timestamp last_current_right_ok;
+static Current current_error_thresh = 20_A;
+static Duration current_timeout = 1_s;
+
+static DistEstimation<float, 100> left_airgap_error_var{0.0f};
+static DistEstimation<float, 100> right_airgap_error_var{0.0f};
+
+static TrapazoidalIntegral left_score{0.0f};
+static TrapazoidalIntegral right_score{0.0f};
+
+static float airgap_controller_N;
+
+static constexpr float N = 1000;
+
 void control::begin() {
   const pid_parameters airgap_pid = {
       .m_Kp = 1.3f,
@@ -86,7 +110,7 @@ void control::begin() {
       .m_Kd = 0.0f,
   };
   canzero_set_airgap_pid(airgap_pid);
-  const pid_parameters_extra airgap_pid_extra = { 
+  const pid_parameters_extra airgap_pid_extra = {
       .m_Ki_min = -4.0f,
       .m_Ki_max = 20.0f,
       .m_ema_alpha = 0.01,
@@ -103,6 +127,7 @@ void control::begin() {
       .m_ema_alpha = 0.5f,
   };
   canzero_set_current_pi_extra(current_pi_extra);
+  canzero_set_airgap_controller_N(100);
 
   // reset also updates the globals!
   reset();
@@ -112,6 +137,44 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                                  Current current_right,
                                                  Distance magnet_airgap_left,
                                                  Distance magnet_airgap_right) {
+
+  // ====================== ERROR-HANDLING =====================
+
+  const auto now = Timestamp::now();
+  if (magnet_airgap_left >= airgap_error_thresh) {
+    last_airgap_left_ok = now;
+  }
+  if (now - last_airgap_left_ok > airgap_timeout) {
+    debugPrintf("airgap left fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+  if (magnet_airgap_right >= airgap_error_thresh) {
+    last_airgap_right_ok = now;
+  }
+  if (now - last_airgap_right_ok > airgap_timeout) {
+    debugPrintf("airgap right fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+
+  if (current_left <= current_error_thresh) {
+    last_current_left_ok = now;
+  }
+  if (now - last_current_left_ok > current_timeout) {
+    debugPrintf("current left fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+  if (current_right <= current_error_thresh) {
+    last_current_right_ok = now;
+  }
+  if (now - last_current_right_ok > current_timeout) {
+    debugPrintf("current right fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+
   // ====================== AIRGAP PIDs =========================
 
   // Left airgap PID
@@ -120,19 +183,31 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
     pid_left_airgap_filter.push(magnet_airgap_left);
     const Distance filtered_airgap = pid_left_airgap_filter.get();
     // error in mm!
-    const float error = static_cast<float>(filtered_airgap - target) * 1e3; 
+    const float error = static_cast<float>(filtered_airgap - target) * 1e3;
+
+    // ONLY DEBUGGING: Calculate Error Variance 
+    {
+      left_airgap_error_var.push(error);
+
+      left_score.integrate(error * error, 1.0f / pwm::frequency());
+    }
 
     pid_left_airgap_state.p_term = error * pid_left_airgap_parameters.Kp;
 
-    pid_left_airgap_state.i_term +=
-        error * pid_left_airgap_parameters.Ki;
+    pid_left_airgap_state.i_term += error * pid_left_airgap_parameters.Ki;
     pid_left_airgap_state.i_term = std::clamp(pid_left_airgap_state.i_term,
                                               pid_left_airgap_parameters.i_min,
                                               pid_left_airgap_parameters.i_max);
 
-    pid_left_airgap_state.d_term =
-        ((error - pid_left_airgap_state.last_error) / delta_time) *
-        pid_left_airgap_parameters.Kd;
+    pid_left_airgap_state.d_term = (pid_left_airgap_parameters.Kd * error -
+                                    pid_left_airgap_state.state_deriviative) *
+                                   airgap_controller_N;
+    pid_left_airgap_state.state_deriviative +=
+        pid_left_airgap_state.d_term / static_cast<float>(pwm::frequency());
+
+    /* pid_left_airgap_state.d_term = */
+    /*     ((error - pid_left_airgap_state.last_error) / delta_time) * */
+    /*     pid_left_airgap_parameters.Kd; */
     pid_left_airgap_state.last_error = error;
   }
   const float left_airgap_pid_output = pid_left_airgap_state.p_term +
@@ -147,17 +222,29 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
     // error in mm!
     const float error = static_cast<float>(filtered_airgap - target) * 1e3;
 
+    // ONLY DEBUGGING: Calculate Error Variance 
+    {
+      right_airgap_error_var.push(error);
+
+      right_score.integrate(error * error, 1.0f / pwm::frequency());
+    }
+
     pid_right_airgap_state.p_term = error * pid_right_airgap_parameters.Kp;
 
-    pid_right_airgap_state.i_term +=
-        error  * pid_right_airgap_parameters.Ki;
+    pid_right_airgap_state.i_term += error * pid_right_airgap_parameters.Ki;
     pid_right_airgap_state.i_term = std::clamp(
         pid_right_airgap_state.i_term, pid_right_airgap_parameters.i_min,
         pid_right_airgap_parameters.i_max);
 
-    pid_right_airgap_state.d_term =
-        ((error - pid_right_airgap_state.last_error) / delta_time) *
-        pid_right_airgap_parameters.Kd;
+    pid_right_airgap_state.d_term = (pid_right_airgap_parameters.Kd * error -
+                                     pid_right_airgap_state.state_deriviative) *
+                                    airgap_controller_N;
+    pid_right_airgap_state.state_deriviative +=
+        pid_right_airgap_state.d_term / static_cast<float>(pwm::frequency());
+
+    /* pid_right_airgap_state.d_term = */
+    /*     ((error - pid_right_airgap_state.last_error) / delta_time) * */
+    /*     pid_right_airgap_parameters.Kd; */
     pid_right_airgap_state.last_error = error;
   }
   const float right_airgap_pid_output = pid_right_airgap_state.p_term +
@@ -165,10 +252,16 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                         pid_right_airgap_state.d_term;
 
   // ==================== FORCE CURRENT CONVERSION ===============
-  const float left_current_pi_target = signed_sqrt(left_airgap_pid_output);
-  
-  const float right_current_pi_target = signed_sqrt(right_airgap_pid_output);
-  
+  float left_current_pi_target = signed_sqrt(left_airgap_pid_output);
+
+  float right_current_pi_target = signed_sqrt(right_airgap_pid_output);
+
+  left_current_pi_target *= magnet_airgap_left / 16_mm;
+  right_current_pi_target *= magnet_airgap_right / 16_mm;
+
+  left_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 20.0f);
+  right_current_pi_target = std::clamp(right_current_pi_target, 0.0f, 20.0f);
+
   // ====================== CURRENT PIDs =========================
   // Left current PI
   {
@@ -208,16 +301,17 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
 
   // =============== OUTPUT ==============
 
-
   constexpr float CONTROL_LOWER_BOUND = -0.9f;
   constexpr float CONTROL_UPPER_BOUND = 0.9f;
-  
-  const Voltage vdc = 45_V;
-                                   
+
+  const Voltage vdc = Voltage(canzero_get_vdc_voltage());
+
   // clamping here (just for debugging!) remove be on release!
-  left_current_pi_output = std::clamp(left_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc), 
+  left_current_pi_output = std::clamp(
+      left_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
       CONTROL_UPPER_BOUND * static_cast<float>(vdc));
-  right_current_pi_output = std::clamp(right_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
+  right_current_pi_output = std::clamp(
+      right_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
       CONTROL_UPPER_BOUND * static_cast<float>(vdc));
 
   const Voltage voltage_left_magnet = Voltage(left_current_pi_output);
@@ -251,6 +345,7 @@ void control::reset() {
   const pid_parameters_extra airgap_pid_extra = canzero_get_airgap_pid_extra();
 
   delta_time = static_cast<float>(1.0f / pwm::frequency());
+
 
   // Initalize Left airgap PID!
   pid_left_airgap_parameters.Kp = airgap_pid.m_Kp;
@@ -301,6 +396,19 @@ void control::reset() {
   pi_right_current_state.i_term = 0;
   pi_right_current_filter.set_alpha(current_pi_extra.m_ema_alpha);
   pi_right_current_filter.reset(Current(canzero_get_current_right()));
+
+  const auto now = Timestamp::now();
+  last_airgap_left_ok = now;
+  last_airgap_right_ok = now;
+
+  last_current_left_ok = now;
+  last_current_right_ok = now;
+
+
+  airgap_controller_N = canzero_get_airgap_controller_N();
+  
+  left_score.reset(0);
+  right_score.reset(0);
 }
 
 void FASTRUN control::update() {
@@ -308,10 +416,13 @@ void FASTRUN control::update() {
   canzero_set_left_airgap_controller_p_term(pid_left_airgap_state.p_term);
   canzero_set_left_airgap_controller_i_term(pid_left_airgap_state.i_term);
   canzero_set_left_airgap_controller_d_term(pid_left_airgap_state.d_term);
+  canzero_set_left_airgap_controller_variance(left_score.get());
 
   canzero_set_right_airgap_controller_p_term(pid_right_airgap_state.p_term);
   canzero_set_right_airgap_controller_i_term(pid_right_airgap_state.i_term);
   canzero_set_right_airgap_controller_d_term(pid_right_airgap_state.d_term);
+
+  canzero_set_right_airgap_controller_variance(right_score.get());
 
   canzero_set_left_current_controller_p_term(pi_left_current_state.p_term);
   canzero_set_left_current_controller_i_term(pi_left_current_state.i_term);
@@ -319,9 +430,23 @@ void FASTRUN control::update() {
   canzero_set_right_current_controller_p_term(pi_right_current_state.p_term);
   canzero_set_right_current_controller_i_term(pi_right_current_state.i_term);
 
-  canzero_set_left_airgap_controller_output(static_cast<float>(debug_left_target_current));
-  canzero_set_right_airgap_controller_output(static_cast<float>(debug_right_target_current));
-  canzero_set_left_current_controller_output(static_cast<float>(debug_left_voltage));
-  canzero_set_right_current_controller_output(static_cast<float>(debug_right_voltage));
+
+
+  canzero_set_left_airgap_controller_output(
+      static_cast<float>(debug_left_target_current));
+  canzero_set_right_airgap_controller_output(
+      static_cast<float>(debug_right_target_current));
+  canzero_set_left_current_controller_output(
+      static_cast<float>(debug_left_voltage));
+  canzero_set_right_current_controller_output(
+      static_cast<float>(debug_right_voltage));
+
+
+  canzero_set_airgap_left(pid_left_airgap_filter.get() / 1_mm);
+  canzero_set_airgap_right(pid_right_airgap_filter.get() / 1_mm);
+
+  canzero_set_current_left(pi_left_current_filter.get() / 1_A);
+  canzero_set_current_right(pi_right_current_filter.get() / 1_A);
+
 
 }

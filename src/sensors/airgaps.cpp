@@ -4,8 +4,11 @@
 #include "firmware/guidance_board.h"
 #include "sensors/formula/displacement420.h"
 #include "util/boxcar.h"
+#include "util/dist_estimation.h"
 #include <cassert>
 
+static DMAMEM DistEstimation<Distance, 1000> left_var(0_mm);
+static DMAMEM DistEstimation<Distance, 1000> right_var(0_mm);
 static DMAMEM BoxcarFilter<Distance, 20> left_filter(0_mm);
 static DMAMEM BoxcarFilter<Distance, 20> right_filter(0_mm);
 
@@ -26,13 +29,17 @@ Distance sensors::airgaps::conv_right(Voltage v){
 static void on_left_disp(const Voltage &v) {
   const Distance disp = sensors::airgaps::conv_left(v);
   left_filter.push(disp);
-  canzero_set_airgap_left(left_filter.get() / 1_mm);
+  left_var.push(disp);
+  /* canzero_set_airgap_left(disp / 1_mm); */
+  /* canzero_set_airgap_left_variance(left_var.variance() * 1e3); */
 }
 
 static void on_right_disp(const Voltage &v) {
   const Distance disp = sensors::airgaps::conv_right(v);
   right_filter.push(disp);
-  canzero_set_airgap_right(right_filter.get() / 1_mm);
+  right_var.push(disp);
+  /* canzero_set_airgap_right(disp / 1_mm); */
+  /* canzero_set_airgap_right_variance(left_var.variance() * 1e3); */
 }
 
 void sensors::airgaps::begin() {
@@ -51,7 +58,14 @@ void sensors::airgaps::calibrate() {
     cali_left_filter.push(disp);
     guidance_board::delay(10_us);
   }
-  const Distance left_target = 16_mm;
+  Distance left_target = 16_mm;
+  if (CANZERO_NODE_ID == node_id_levitation_board1){
+    left_target = 9.5_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board2){
+    left_target = 9.8_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board3){
+    left_target = 9_mm;
+  }
   offset_left = left_target - cali_left_filter.get();
 
 
@@ -63,7 +77,14 @@ void sensors::airgaps::calibrate() {
     cali_right_filter.push(disp);
     guidance_board::delay(10_us);
   }
-  const Distance right_target = 16_mm;
+  Distance right_target = 16_mm;
+  if (CANZERO_NODE_ID == node_id_levitation_board1){
+    right_target = 10_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board2){
+    right_target = 10.5_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board3){
+    right_target = 9.8_mm;
+  }
   offset_right = right_target - cali_right_filter.get();
 
   for (size_t i = 0; i < left_filter.size(); ++i) {
@@ -78,6 +99,9 @@ void sensors::airgaps::calibrate() {
     canzero_update_continue(canzero_get_time());
     guidance_board::delay(1_ms);
   }
+
+  canzero_set_airgap_left(left_filter.get() / 1_mm);
+  canzero_set_airgap_right(left_filter.get() / 1_mm);
 
 }
 

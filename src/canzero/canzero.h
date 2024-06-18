@@ -123,6 +123,7 @@ typedef struct {
   double m_Ki_max;
   double m_ema_alpha;
 } pi_parameters_extra;
+static const node_id CANZERO_NODE_ID = node_id_levitation_board3;
 typedef struct {
   uint32_t id;
   uint8_t dlc;
@@ -194,9 +195,17 @@ static inline float canzero_get_airgap_left() {
   extern float __oe_airgap_left;
   return __oe_airgap_left;
 }
+static inline float canzero_get_airgap_left_variance() {
+  extern float __oe_airgap_left_variance;
+  return __oe_airgap_left_variance;
+}
 static inline float canzero_get_airgap_right() {
   extern float __oe_airgap_right;
   return __oe_airgap_right;
+}
+static inline float canzero_get_airgap_right_variance() {
+  extern float __oe_airgap_right_variance;
+  return __oe_airgap_right_variance;
 }
 static inline float canzero_get_target_airgap_left() {
   extern float __oe_target_airgap_left;
@@ -370,6 +379,10 @@ static inline float canzero_get_left_airgap_controller_output() {
   extern float __oe_left_airgap_controller_output;
   return __oe_left_airgap_controller_output;
 }
+static inline float canzero_get_left_airgap_controller_variance() {
+  extern float __oe_left_airgap_controller_variance;
+  return __oe_left_airgap_controller_variance;
+}
 static inline float canzero_get_right_airgap_controller_p_term() {
   extern float __oe_right_airgap_controller_p_term;
   return __oe_right_airgap_controller_p_term;
@@ -385,6 +398,10 @@ static inline float canzero_get_right_airgap_controller_d_term() {
 static inline float canzero_get_right_airgap_controller_output() {
   extern float __oe_right_airgap_controller_output;
   return __oe_right_airgap_controller_output;
+}
+static inline float canzero_get_right_airgap_controller_variance() {
+  extern float __oe_right_airgap_controller_variance;
+  return __oe_right_airgap_controller_variance;
 }
 static inline float canzero_get_left_current_controller_p_term() {
   extern float __oe_left_current_controller_p_term;
@@ -410,6 +427,10 @@ static inline float canzero_get_right_current_controller_output() {
   extern float __oe_right_current_controller_output;
   return __oe_right_current_controller_output;
 }
+static inline uint16_t canzero_get_airgap_controller_N() {
+  extern uint16_t __oe_airgap_controller_N;
+  return __oe_airgap_controller_N;
+}
 typedef struct {
   get_resp_header m_header;
   uint32_t m_data;
@@ -426,8 +447,8 @@ typedef struct {
   bool_t m_control_active;
   sdc_status m_precharge_status;
   sdc_status m_feedthrough_status;
-} canzero_message_levitation_board1_stream_state;
-static const uint32_t canzero_message_levitation_board1_stream_state_id = 0x69;
+} canzero_message_levitation_board3_stream_state;
+static const uint32_t canzero_message_levitation_board3_stream_state_id = 0x47;
 typedef struct {
   error_level m_error_level_vdc_voltage;
   error_flag m_error_arming_failed;
@@ -439,60 +460,67 @@ typedef struct {
   error_level m_error_level_magnet_temperature_right;
   error_level m_error_level_mcu_temperature;
   error_flag m_assertion_fault;
-} canzero_message_levitation_board1_stream_errors;
-static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0x56;
+} canzero_message_levitation_board3_stream_errors;
+static const uint32_t canzero_message_levitation_board3_stream_errors_id = 0x91;
 typedef struct {
   float m_vdc_voltage;
   float m_current_left;
   float m_current_right;
   float m_input_current;
-} canzero_message_levitation_board1_stream_voltage_and_currents;
-static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0x76;
+} canzero_message_levitation_board3_stream_voltage_and_currents;
+static const uint32_t canzero_message_levitation_board3_stream_voltage_and_currents_id = 0x50;
 typedef struct {
   float m_airgap_left;
   float m_airgap_right;
   float m_target_airgap_left;
   float m_target_airgap_right;
-} canzero_message_levitation_board1_stream_airgaps;
-static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0x78;
+} canzero_message_levitation_board3_stream_airgaps;
+static const uint32_t canzero_message_levitation_board3_stream_airgaps_id = 0x52;
+typedef struct {
+  float m_airgap_left_variance;
+  float m_airgap_right_variance;
+  float m_left_airgap_controller_variance;
+  float m_right_airgap_controller_variance;
+} canzero_message_levitation_board3_stream_airgap_variance;
+static const uint32_t canzero_message_levitation_board3_stream_airgap_variance_id = 0x93;
 typedef struct {
   float m_left_airgap_controller_p_term;
   float m_left_airgap_controller_i_term;
   float m_left_airgap_controller_d_term;
   float m_left_airgap_controller_output;
-} canzero_message_levitation_board1_stream_controller_debug_1;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_1_id = 0x98;
+} canzero_message_levitation_board3_stream_controller_debug_1;
+static const uint32_t canzero_message_levitation_board3_stream_controller_debug_1_id = 0x72;
 typedef struct {
   float m_right_airgap_controller_p_term;
   float m_right_airgap_controller_i_term;
   float m_right_airgap_controller_d_term;
   float m_right_airgap_controller_output;
-} canzero_message_levitation_board1_stream_controller_debug_2;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_2_id = 0x57;
+} canzero_message_levitation_board3_stream_controller_debug_2;
+static const uint32_t canzero_message_levitation_board3_stream_controller_debug_2_id = 0x92;
 typedef struct {
   float m_left_current_controller_p_term;
   float m_left_current_controller_i_term;
   float m_left_current_controller_output;
-} canzero_message_levitation_board1_stream_controller_debug_3;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_3_id = 0x77;
+} canzero_message_levitation_board3_stream_controller_debug_3;
+static const uint32_t canzero_message_levitation_board3_stream_controller_debug_3_id = 0x51;
 typedef struct {
   float m_right_current_controller_p_term;
   float m_right_current_controller_i_term;
   float m_right_current_controller_output;
-} canzero_message_levitation_board1_stream_controller_debug_4;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_4_id = 0x97;
+} canzero_message_levitation_board3_stream_controller_debug_4;
+static const uint32_t canzero_message_levitation_board3_stream_controller_debug_4_id = 0x71;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can0;
-static const uint32_t canzero_message_heartbeat_can0_id = 0xE6;
+static const uint32_t canzero_message_heartbeat_can0_id = 0xE5;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can1;
-static const uint32_t canzero_message_heartbeat_can1_id = 0xE5;
+static const uint32_t canzero_message_heartbeat_can1_id = 0xE4;
 typedef struct {
   get_req_header m_header;
 } canzero_message_get_req;
@@ -505,7 +533,7 @@ static const uint32_t canzero_message_set_req_id = 0xDE;
 typedef struct {
   levitation_command m_levitation_command;
 } canzero_message_mother_board_stream_levitation_command;
-static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x43;
+static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x42;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);
@@ -546,9 +574,19 @@ static inline void canzero_set_airgap_left(float value){
   __oe_airgap_left = value;
 }
 
+static inline void canzero_set_airgap_left_variance(float value){
+  extern float __oe_airgap_left_variance;
+  __oe_airgap_left_variance = value;
+}
+
 static inline void canzero_set_airgap_right(float value){
   extern float __oe_airgap_right;
   __oe_airgap_right = value;
+}
+
+static inline void canzero_set_airgap_right_variance(float value){
+  extern float __oe_airgap_right_variance;
+  __oe_airgap_right_variance = value;
 }
 
 static inline void canzero_set_target_airgap_left(float value){
@@ -742,6 +780,11 @@ static inline void canzero_set_left_airgap_controller_output(float value){
   __oe_left_airgap_controller_output = value;
 }
 
+static inline void canzero_set_left_airgap_controller_variance(float value){
+  extern float __oe_left_airgap_controller_variance;
+  __oe_left_airgap_controller_variance = value;
+}
+
 static inline void canzero_set_right_airgap_controller_p_term(float value){
   extern float __oe_right_airgap_controller_p_term;
   __oe_right_airgap_controller_p_term = value;
@@ -760,6 +803,11 @@ static inline void canzero_set_right_airgap_controller_d_term(float value){
 static inline void canzero_set_right_airgap_controller_output(float value){
   extern float __oe_right_airgap_controller_output;
   __oe_right_airgap_controller_output = value;
+}
+
+static inline void canzero_set_right_airgap_controller_variance(float value){
+  extern float __oe_right_airgap_controller_variance;
+  __oe_right_airgap_controller_variance = value;
 }
 
 static inline void canzero_set_left_current_controller_p_term(float value){
@@ -792,6 +840,11 @@ static inline void canzero_set_right_current_controller_output(float value){
   __oe_right_current_controller_output = value;
 }
 
+static inline void canzero_set_airgap_controller_N(uint16_t value){
+  extern uint16_t __oe_airgap_controller_N;
+  __oe_airgap_controller_N = value;
+}
+
 void canzero_send_config_hash();
 
 void canzero_send_build_time();
@@ -816,7 +869,11 @@ void canzero_send_error_precharge_failed();
 
 void canzero_send_airgap_left();
 
+void canzero_send_airgap_left_variance();
+
 void canzero_send_airgap_right();
+
+void canzero_send_airgap_right_variance();
 
 void canzero_send_target_airgap_left();
 
@@ -904,6 +961,8 @@ void canzero_send_left_airgap_controller_d_term();
 
 void canzero_send_left_airgap_controller_output();
 
+void canzero_send_left_airgap_controller_variance();
+
 void canzero_send_right_airgap_controller_p_term();
 
 void canzero_send_right_airgap_controller_i_term();
@@ -911,6 +970,8 @@ void canzero_send_right_airgap_controller_i_term();
 void canzero_send_right_airgap_controller_d_term();
 
 void canzero_send_right_airgap_controller_output();
+
+void canzero_send_right_airgap_controller_variance();
 
 void canzero_send_left_current_controller_p_term();
 
@@ -923,5 +984,7 @@ void canzero_send_right_current_controller_p_term();
 void canzero_send_right_current_controller_i_term();
 
 void canzero_send_right_current_controller_output();
+
+void canzero_send_airgap_controller_N();
 
 #endif
