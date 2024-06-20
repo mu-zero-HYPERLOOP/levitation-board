@@ -3,6 +3,7 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "control.h"
+#include "defaults.h"
 #include "firmware/guidance_board.h"
 #include "fsm/fsm.h"
 #include "print.h"
@@ -18,6 +19,7 @@
 
 int main() {
   canzero_init();
+  can_defaults();
   canzero_set_assertion_fault(error_flag_OK);
   fsm::begin();
   guidance_board::begin();

@@ -7,9 +7,10 @@ levitation_command fsm::error_handling::approve(levitation_command cmd) {
 
   return cmd;
 
-  const auto error_flags = std::array<error_flag, 2>{
+  const auto error_flags = std::array<error_flag, 3>{
     canzero_get_error_arming_failed(),
     canzero_get_error_precharge_failed(),
+    canzero_get_error_heartbeat_miss(),
   };
 
   const auto max_error_flag_it = std::max_element(error_flags.begin(), error_flags.end());
@@ -19,10 +20,14 @@ levitation_command fsm::error_handling::approve(levitation_command cmd) {
     return levitation_command_DISARM45;
   }
 
-  const auto error_levels = std::array<error_level, 3>{
+  const auto error_levels = std::array<error_level, 7>{
       canzero_get_error_level_mcu_temperature(),
       canzero_get_error_level_magnet_temperature_left(),
       canzero_get_error_level_magnet_temperature_right(),
+      canzero_get_error_level_vdc_voltage(),
+      canzero_get_error_level_input_current(),
+      canzero_get_error_level_magnet_current_left(),
+      canzero_get_error_level_magnet_current_right(),
   };
   const auto max_error_level_it = std::max_element(error_levels.begin(), error_levels.end());
   const error_level max_error_level = *max_error_level_it;
