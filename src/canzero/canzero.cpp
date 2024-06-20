@@ -83,6 +83,7 @@ float DMAMEM __oe_right_current_controller_p_term;
 float DMAMEM __oe_right_current_controller_i_term;
 float DMAMEM __oe_right_current_controller_output;
 uint16_t DMAMEM __oe_airgap_controller_N;
+uint16_t DMAMEM __oe_isr_time;
 static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
   for(uint8_t i = 0; i < 8; ++i){
@@ -1361,15 +1362,15 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
   }
   case 50: {
     {
-      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
       __oe_airgap_pid_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
       __oe_airgap_pid_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
     }    {
-      uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
       __oe_airgap_pid_rx_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
       __oe_airgap_pid_rx_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
     }    {
-      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
       __oe_airgap_pid_rx_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
       __oe_airgap_pid_rx_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
     }
@@ -1553,6 +1554,13 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
   }
   case 70: {
     resp.m_data |= ((uint32_t)(__oe_airgap_controller_N & (0xFFFF >> (16 - 16)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
+    break;
+  }
+  case 71: {
+    resp.m_data |= ((uint32_t)(__oe_isr_time & (0xFFFF >> (16 - 16)))) << 0;
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 1;
     resp.m_header.m_toggle = 0;
@@ -2192,9 +2200,9 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pid_parameters airgap_pid_tmp;
-    airgap_pid_tmp.m_Kp = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
-    airgap_pid_tmp.m_Ki = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
-    airgap_pid_tmp.m_Kd = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[4] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.000000000000000005421010862427522 + 0;
+    airgap_pid_tmp.m_Kp = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000005421010862427522 + 0;
+    airgap_pid_tmp.m_Ki = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[2] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000005421010862427522 + 0;
+    airgap_pid_tmp.m_Kd = ((uint64_t)airgap_pid_tmp_tx_fragmentation_buffer[4] | (((uint64_t)(airgap_pid_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000000000005421010862427522 + 0;
     canzero_set_airgap_pid(airgap_pid_tmp);
     break;
   }
@@ -2419,6 +2427,15 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
     canzero_set_airgap_controller_N(airgap_controller_N_tmp);
     break;
   }
+  case 71 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    uint16_t isr_time_tmp;
+    isr_time_tmp = ((uint16_t)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16)))));
+    canzero_set_isr_time(isr_time_tmp);
+    break;
+  }
   default:
     return;
   }
@@ -2566,7 +2583,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 18135772835215668955ull;
+  __oe_config_hash = 8037430056785118280ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -3493,15 +3510,15 @@ void canzero_send_gamepad_x_down() {
 void canzero_send_airgap_pid() {
   canzero_message_get_resp msg;
   {
-    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kp - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
     __oe_airgap_pid_send_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
     __oe_airgap_pid_send_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
   }  {
-    uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Ki - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
     __oe_airgap_pid_send_fragmentation_buffer[2] = ((uint32_t*)&masked)[0];
     __oe_airgap_pid_send_fragmentation_buffer[3] = ((uint32_t*)&masked)[1];
   }  {
-    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.000000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+    uint64_t masked = (min_u64((__oe_airgap_pid.m_Kd - ((double)0)) / (double)0.00000000000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
     __oe_airgap_pid_send_fragmentation_buffer[4] = ((uint32_t*)&masked)[0];
     __oe_airgap_pid_send_fragmentation_buffer[5] = ((uint32_t*)&masked)[1];
   }
@@ -3813,6 +3830,19 @@ void canzero_send_airgap_controller_N() {
   msg.m_header.m_sof = 1;
   msg.m_header.m_toggle = 0;
   msg.m_header.m_od_index = 70;
+  msg.m_header.m_client_id = 255;
+  msg.m_header.m_server_id = node_id_levitation_board3;
+  canzero_frame sender_frame;
+  canzero_serialize_canzero_message_get_resp(&msg, &sender_frame);
+  canzero_can0_send(&sender_frame);
+}
+void canzero_send_isr_time() {
+  canzero_message_get_resp msg;
+  msg.m_data |= ((uint32_t)(__oe_isr_time & (0xFFFF >> (16 - 16)))) << 0;
+  msg.m_header.m_eof = 1;
+  msg.m_header.m_sof = 1;
+  msg.m_header.m_toggle = 0;
+  msg.m_header.m_od_index = 71;
   msg.m_header.m_client_id = 255;
   msg.m_header.m_server_id = node_id_levitation_board3;
   canzero_frame sender_frame;

@@ -431,6 +431,10 @@ static inline uint16_t canzero_get_airgap_controller_N() {
   extern uint16_t __oe_airgap_controller_N;
   return __oe_airgap_controller_N;
 }
+static inline uint16_t canzero_get_isr_time() {
+  extern uint16_t __oe_isr_time;
+  return __oe_isr_time;
+}
 typedef struct {
   get_resp_header m_header;
   uint32_t m_data;
@@ -845,6 +849,11 @@ static inline void canzero_set_airgap_controller_N(uint16_t value){
   __oe_airgap_controller_N = value;
 }
 
+static inline void canzero_set_isr_time(uint16_t value){
+  extern uint16_t __oe_isr_time;
+  __oe_isr_time = value;
+}
+
 void canzero_send_config_hash();
 
 void canzero_send_build_time();
@@ -986,5 +995,7 @@ void canzero_send_right_current_controller_i_term();
 void canzero_send_right_current_controller_output();
 
 void canzero_send_airgap_controller_N();
+
+void canzero_send_isr_time();
 
 #endif

@@ -5,6 +5,7 @@
 #include "sensors/formula/displacement420.h"
 #include "util/boxcar.h"
 #include "util/dist_estimation.h"
+#include "print.h"
 #include <cassert>
 
 static DMAMEM DistEstimation<Distance, 1000> left_var(0_mm);
@@ -50,42 +51,46 @@ void sensors::airgaps::begin() {
 }
 
 void sensors::airgaps::calibrate() {
-  BoxcarFilter<Distance, 1000> cali_left_filter(0_mm);
-  for (size_t k = 0; k < cali_left_filter.size(); ++k) {
-    const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_l_19);
-  const Current i = v / sensors::airgaps::R_MEAS;
-    const Distance disp = sensors::formula::displacement420(i);
-    cali_left_filter.push(disp);
-    guidance_board::delay(10_us);
-  }
-  Distance left_target = 16_mm;
-  if (CANZERO_NODE_ID == node_id_levitation_board1){
-    left_target = 9.5_mm;
-  }else if (CANZERO_NODE_ID == node_id_levitation_board2){
-    left_target = 9.8_mm;
-  }else if (CANZERO_NODE_ID == node_id_levitation_board3){
-    left_target = 9_mm;
-  }
-  offset_left = left_target - cali_left_filter.get();
+  /* BoxcarFilter<Distance, 1000> cali_left_filter(0_mm); */
+  /* for (size_t k = 0; k < cali_left_filter.size(); ++k) { */
+  /*   const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_l_19); */
+  /* const Current i = v / sensors::airgaps::R_MEAS; */
+  /*   const Distance disp = sensors::formula::displacement420(i); */
+  /*   cali_left_filter.push(disp); */
+  /*   guidance_board::delay(10_us); */
+  /* } */
+  /* Distance left_target = 16_mm; */
+  /* if (CANZERO_NODE_ID == node_id_levitation_board1){ */
+  /*   left_target = 9.5_mm; */
+  /* }else if (CANZERO_NODE_ID == node_id_levitation_board2){ */
+  /*   left_target = 9.8_mm; */
+  /* }else if (CANZERO_NODE_ID == node_id_levitation_board3){ */
+  /*   left_target = 9_mm; */
+  /* } */
+  /* offset_left = left_target - cali_left_filter.get(); */
 
 
-  BoxcarFilter<Distance, 1000> cali_right_filter(0_mm);
-  for (size_t k = 0; k < cali_right_filter.size(); ++k) {
-    const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_r_17);
-  const Current i = v / sensors::airgaps::R_MEAS;
-    const Distance disp = sensors::formula::displacement420(i);
-    cali_right_filter.push(disp);
-    guidance_board::delay(10_us);
-  }
-  Distance right_target = 16_mm;
-  if (CANZERO_NODE_ID == node_id_levitation_board1){
-    right_target = 10_mm;
-  }else if (CANZERO_NODE_ID == node_id_levitation_board2){
-    right_target = 10.5_mm;
-  }else if (CANZERO_NODE_ID == node_id_levitation_board3){
-    right_target = 9.8_mm;
-  }
-  offset_right = right_target - cali_right_filter.get();
+  /* BoxcarFilter<Distance, 1000> cali_right_filter(0_mm); */
+  /* for (size_t k = 0; k < cali_right_filter.size(); ++k) { */
+  /*   const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_r_17); */
+  /* const Current i = v / sensors::airgaps::R_MEAS; */
+  /*   const Distance disp = sensors::formula::displacement420(i); */
+  /*   cali_right_filter.push(disp); */
+  /*   guidance_board::delay(10_us); */
+  /* } */
+  /* Distance right_target = 16_mm; */
+  /* if (CANZERO_NODE_ID == node_id_levitation_board1){ */
+  /*   right_target = 10_mm; */
+  /* }else if (CANZERO_NODE_ID == node_id_levitation_board2){ */
+  /*   right_target = 10.5_mm; */
+  /* }else if (CANZERO_NODE_ID == node_id_levitation_board3){ */
+  /*   right_target = 9.8_mm; */
+  /* } */
+  /* offset_right = right_target - cali_right_filter.get(); */
+
+
+  offset_left = -28_mm;
+  offset_right = -28_mm;
 
   for (size_t i = 0; i < left_filter.size(); ++i) {
     const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_l_19);
@@ -100,8 +105,9 @@ void sensors::airgaps::calibrate() {
     guidance_board::delay(1_ms);
   }
 
+
   canzero_set_airgap_left(left_filter.get() / 1_mm);
-  canzero_set_airgap_right(left_filter.get() / 1_mm);
+  canzero_set_airgap_right(right_filter.get() / 1_mm);
 
 }
 

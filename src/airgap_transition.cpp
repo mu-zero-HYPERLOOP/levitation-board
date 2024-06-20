@@ -49,8 +49,8 @@ public:
       return m_end_airgap;
     }
     // map [0,1] -> [-5,5]
-    const float x = alpha * 10.0f - 5.0f;
-    const float y = sigmoid(x)/sigmoid(5);
+    /* const float x = alpha * 10.0f - 5.0f; */
+    const float y = alpha;
     // linear interpolation between start and end.
     return m_start_airgap * (1.0f - y) + m_end_airgap * y;
   }
