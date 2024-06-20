@@ -4,6 +4,7 @@
 #include "error_level_range_check.h"
 #include "firmware/adc_etc.h"
 #include "print.h"
+#include "sensors/airgaps.h"
 #include "sensors/formula/current_sense.h"
 #include "sensors/formula/displacement420.h"
 #include "sensors/formula/isolated_voltage.h"
@@ -46,22 +47,20 @@ void adc_etc_done0_isr(AdcTrigRes res) {
   const Voltage v_i_mag_r = res.trig_res(TRIG0, 0);
   const Voltage v_i_mag_l = res.trig_res(TRIG0, 1);
 
-  const Voltage v_disp_sense_mag_r = res.trig_res(TRIG4, 0); 
-  const Voltage v_disp_sense_mag_l = res.trig_res(TRIG4, 1); 
+  const Voltage v_disp_sense_mag_r = res.trig_res(TRIG4, 0);
+  const Voltage v_disp_sense_mag_l = res.trig_res(TRIG4, 1);
 
   // Current sense
-  const Current i_mag_r =
-      sensors::formula::current_sense(v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm);
-  const Current i_mag_l =
-      sensors::formula::current_sense(v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm);
+  const Current i_mag_r = sensors::formula::current_sense(
+      v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm);
+  const Current i_mag_l = sensors::formula::current_sense(
+      v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm);
 
-  const Current i_disp_sense_mag_l = v_disp_sense_mag_l / DISP_MEAS_R;
   const Distance disp_sense_mag_l =
-      sensors::formula::displacement420(i_disp_sense_mag_l) - 29_mm;
+      sensors::airgaps::conv_left(v_disp_sense_mag_l);
 
-  const Current i_disp_sense_mag_r = v_disp_sense_mag_r / DISP_MEAS_R;
   const Distance disp_sense_mag_r =
-      sensors::formula::displacement420(i_disp_sense_mag_r) - 29_mm;
+      sensors::airgaps::conv_right(v_disp_sense_mag_r);
 
   const GuidancePwmControl pwmControl = control::control_loop(
       i_mag_l, i_mag_r, disp_sense_mag_l, disp_sense_mag_r);

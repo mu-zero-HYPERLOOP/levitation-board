@@ -7,7 +7,7 @@
 #include "sensors/formula/isolated_voltage.h"
 #include "util/boxcar.h"
 
-static DMAMEM BoxcarFilter<Voltage, 20> filter(0_V);
+static DMAMEM BoxcarFilter<Voltage, 100> filter(0_V);
 
 static DMAMEM ErrorLevelRangeCheck<EXPECT_UNDER>
     error_check(canzero_get_vdc_voltage,
