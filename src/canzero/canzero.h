@@ -123,6 +123,7 @@ typedef struct {
   double m_Ki_max;
   double m_ema_alpha;
 } pi_parameters_extra;
+static const node_id CANZERO_NODE_ID = node_id_levitation_board1;
 typedef struct {
   uint32_t id;
   uint8_t dlc;

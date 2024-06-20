@@ -385,7 +385,8 @@ static void canzero_deserialize_canzero_message_heartbeat_can1(canzero_frame* fr
   msg->m_unregister = ((((uint32_t*)data)[0] >> 8) & (0xFFFFFFFF >> (32 - 1)));
   msg->m_ticks_next = ((((uint32_t*)data)[0] >> 9) & (0xFFFFFFFF >> (32 - 7)));
 }
-__attribute__((weak)) void canzero_can0_wdg_timeout(uint8_t node_id) {}
+__attribute__((weak)) void canzero_can0_wdg_timeout(uint8_t node_id) {
+}
 __attribute__((weak)) void canzero_can1_wdg_timeout(uint8_t node_id) {}
 
 typedef enum {

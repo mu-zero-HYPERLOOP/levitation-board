@@ -1,17 +1,25 @@
-#include <stdarg.h>
 #include <Arduino.h>
+#include <stdarg.h>
 
-void debugPrintf( const char* format, ... ) {
+constexpr bool DISABLE_PRINT = false;
+
+void debugPrintf(const char *format, ...) {
+  if constexpr (!DISABLE_PRINT) {
     va_list args;
-    va_start( args, format );
+    va_start(args, format);
     Serial.vprintf(format, args);
-    va_end( args );
+    va_end(args);
+  }
 }
 
-void debugPrintChar(char c){
-  Serial.print(c);
+void debugPrintChar(char c) {
+  if constexpr (!DISABLE_PRINT) {
+    Serial.print(c);
+  }
 }
 
-void debugPrintFlush(){
-  Serial.flush();
+void debugPrintFlush() {
+  if constexpr (!DISABLE_PRINT) {
+    Serial.flush();
+  }
 }
