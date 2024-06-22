@@ -2,6 +2,7 @@
 #define CANZERO_H
 #include <cinttypes>
 #include <cstddef>
+#define MAX_DYN_HEARTBEATS 10
 typedef enum {
   node_id_gamepad = 0,
   node_id_mother_board = 1,
