@@ -455,11 +455,5 @@ void FASTRUN control::update() {
   canzero_set_right_current_controller_output(
       static_cast<float>(debug_right_voltage));
 
-  canzero_set_airgap_left(last_left_airgap / 1_mm);
-  canzero_set_airgap_right(last_right_airgap / 1_mm);
-
-  canzero_set_current_left(pi_left_current_filter.get() / 1_A);
-  canzero_set_current_right(pi_right_current_filter.get() / 1_A);
-
   canzero_set_isr_time(isr_us);
 }

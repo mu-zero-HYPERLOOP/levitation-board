@@ -2,7 +2,6 @@
 #define CANZERO_H
 #include <cinttypes>
 #include <cstddef>
-#define MAX_DYN_HEARTBEATS 10
 typedef enum {
   node_id_gamepad = 0,
   node_id_mother_board = 1,
@@ -15,7 +14,8 @@ typedef enum {
   node_id_input_board = 8,
   node_id_power_board12 = 9,
   node_id_power_board24 = 10,
-  node_id_count = 11,
+  node_id_test_node = 11,
+  node_id_count = 12,
 } node_id;
 typedef struct {
   uint16_t m_od_index;

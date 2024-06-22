@@ -5,19 +5,19 @@
 #include "sensors/formula/displacement420.h"
 #include "util/boxcar.h"
 #include "util/dist_estimation.h"
-#include "print.h"
 #include <cassert>
 
 static DMAMEM DistEstimation<Distance, 1000> left_var(0_mm);
 static DMAMEM DistEstimation<Distance, 1000> right_var(0_mm);
-static DMAMEM BoxcarFilter<Distance, 20> left_filter(0_mm);
-static DMAMEM BoxcarFilter<Distance, 20> right_filter(0_mm);
+static DMAMEM BoxcarFilter<Distance, 1> left_filter(0_mm);
+static DMAMEM BoxcarFilter<Distance, 1> right_filter(0_mm);
 
 static Distance offset_left = 0_m;
 static Distance offset_right = 0_m;
 
 
 Distance sensors::airgaps::conv_left(Voltage v){
+
   const Current i = v / sensors::airgaps::R_MEAS;
   return sensors::formula::displacement420(i) + offset_left;
 }
@@ -31,16 +31,16 @@ static void on_left_disp(const Voltage &v) {
   const Distance disp = sensors::airgaps::conv_left(v);
   left_filter.push(disp);
   left_var.push(disp);
-  /* canzero_set_airgap_left(disp / 1_mm); */
-  /* canzero_set_airgap_left_variance(left_var.variance() * 1e3); */
+  canzero_set_airgap_left(disp / 1_mm);
+  canzero_set_airgap_left_variance(left_var.variance() * 1e3);
 }
 
 static void on_right_disp(const Voltage &v) {
   const Distance disp = sensors::airgaps::conv_right(v);
   right_filter.push(disp);
   right_var.push(disp);
-  /* canzero_set_airgap_right(disp / 1_mm); */
-  /* canzero_set_airgap_right_variance(left_var.variance() * 1e3); */
+  canzero_set_airgap_right(disp / 1_mm);
+  canzero_set_airgap_right_variance(left_var.variance() * 1e3);
 }
 
 void sensors::airgaps::begin() {
