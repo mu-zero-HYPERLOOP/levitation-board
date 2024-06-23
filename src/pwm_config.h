@@ -4,7 +4,7 @@
 #include "firmware/pwm.h"
 
 
-static void pwm_config() {
+static inline void pwm_config() {
   PwmBeginInfo pwmBeginInfo;
   pwmBeginInfo.enable_outputs = false;
   pwmBeginInfo.frequency = 20_kHz;

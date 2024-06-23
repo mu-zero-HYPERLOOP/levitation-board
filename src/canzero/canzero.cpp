@@ -410,7 +410,6 @@ typedef struct {
   uint32_t stream_id;
 } stream_interval_job;
 
-#define MAX_DYN_HEARTBEATS 10
 typedef struct {
   unsigned int* can0_static_wdg_armed;
   int* can0_static_tick_countdowns;
@@ -2620,7 +2619,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 3616101509144958858ull;
+  __oe_config_hash = 11303641531648925212ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
