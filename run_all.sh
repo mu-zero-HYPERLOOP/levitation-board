@@ -11,15 +11,15 @@
 
 canzero gen levitation_board1 src/canzero
 make -C build
-$TERM -e $PWD/build/levitation-board&
+alacritty -e $PWD/build/levitation-board&
 
 canzero gen levitation_board2 src/canzero
 make -C build
-$TERM -e $PWD/build/levitation-board&
+alacritty -e $PWD/build/levitation-board&
 
 canzero gen levitation_board3 src/canzero
 make -C build
-$TERM -e $PWD/build/levitation-board&
+alacritty -e $PWD/build/levitation-board&
 
 
 
