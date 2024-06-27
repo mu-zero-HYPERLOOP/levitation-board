@@ -14,4 +14,6 @@ static void can_defaults() {
   canzero_set_error_level_magnet_current_right(error_level_OK);
   canzero_set_error_level_magnet_temperature_left(error_level_OK);
   canzero_set_error_level_magnet_temperature_right(error_level_OK);
+
+  canzero_set_ignore_45v(bool_t_FALSE);
 }
