@@ -1,3 +1,4 @@
+#include "airgap_transition.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
@@ -11,9 +12,12 @@ levitation_state fsm::states::disarming45(levitation_command cmd, Duration time_
     return levitation_state_IDLE;
   }
 
+  airgap_transition::transition_to_ground(0_s);
+
   pwm::control(PwmControl());
   pwm::enable_output();
   pwm::disable_trig1();
+
 
   sdc_brake::open();
 

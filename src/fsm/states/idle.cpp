@@ -1,3 +1,4 @@
+#include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
@@ -14,6 +15,8 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
     canzero_set_error_arming_failed(error_flag_OK);
     canzero_set_error_precharge_failed(error_flag_OK);
   }
+
+  airgap_transition::transition_to_ground(0_s);
 
 
 

@@ -1,3 +1,4 @@
+#include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
@@ -20,6 +21,8 @@ levitation_state fsm::states::precharge(levitation_command cmd,
   if (levitation_command_DISARM45 == cmd || levitation_command_ABORT == cmd) {
     return levitation_state_DISARMING45;
   }
+
+  airgap_transition::transition_to_ground(0_s);
 
   if (time_since_last_transition > MAX_STATE_TIME) {
     canzero_set_command(levitation_command_DISARM45);

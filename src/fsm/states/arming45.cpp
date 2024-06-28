@@ -1,3 +1,4 @@
+#include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
@@ -22,6 +23,8 @@ levitation_state fsm::states::arming45(levitation_command cmd,
     canzero_set_error_arming_failed(error_flag_ERROR);
     return levitation_state_DISARMING45;
   }
+
+  airgap_transition::transition_to_ground(0_s);
 
   if (levitation_command_PRECHARGE == cmd) {
     // precharge should only be send if all SDC switches are closed.

@@ -14,6 +14,7 @@ levitation_state fsm::states::init(levitation_command cmd, Duration time_since_l
   pwm::disable_output();
   pwm::disable_trig1();
 
+
   precharge_mosfet::open();
   feedthrough_mosfet::open();
 
