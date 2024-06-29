@@ -125,7 +125,7 @@ typedef struct {
   double m_Ki_max;
   double m_ema_alpha;
 } pi_parameters_extra;
-static const node_id CANZERO_NODE_ID = node_id_levitation_board3;
+static const node_id CANZERO_NODE_ID = node_id_levitation_board1;
 typedef struct {
   uint32_t id;
   uint8_t dlc;
@@ -461,8 +461,8 @@ typedef struct {
   bool_t m_control_active;
   sdc_status m_precharge_status;
   sdc_status m_feedthrough_status;
-} canzero_message_levitation_board3_stream_state;
-static const uint32_t canzero_message_levitation_board3_stream_state_id = 0x8F;
+} canzero_message_levitation_board1_stream_state;
+static const uint32_t canzero_message_levitation_board1_stream_state_id = 0xB0;
 typedef struct {
   error_flag m_error_heartbeat_miss;
   error_level m_error_level_mcu_temperature;
@@ -475,61 +475,61 @@ typedef struct {
   error_level m_error_level_magnet_temperature_left;
   error_level m_error_level_magnet_temperature_right;
   error_flag m_assertion_fault;
-} canzero_message_levitation_board3_stream_errors;
-static const uint32_t canzero_message_levitation_board3_stream_errors_id = 0x6F;
+} canzero_message_levitation_board1_stream_errors;
+static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0x90;
 typedef struct {
   float m_magnet_temperature_left1;
   float m_magnet_temperature_right1;
   float m_mcu_temperature;
-} canzero_message_levitation_board3_stream_temperatures;
-static const uint32_t canzero_message_levitation_board3_stream_temperatures_id = 0xD6;
+} canzero_message_levitation_board1_stream_temperatures;
+static const uint32_t canzero_message_levitation_board1_stream_temperatures_id = 0xD9;
 typedef struct {
   float m_vdc_voltage;
   float m_current_left;
   float m_current_right;
   float m_input_current;
-} canzero_message_levitation_board3_stream_voltage_and_currents;
-static const uint32_t canzero_message_levitation_board3_stream_voltage_and_currents_id = 0x55;
+} canzero_message_levitation_board1_stream_voltage_and_currents;
+static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0x58;
 typedef struct {
   float m_airgap_left;
   float m_airgap_right;
   float m_target_airgap_left;
   float m_target_airgap_right;
-} canzero_message_levitation_board3_stream_airgaps;
-static const uint32_t canzero_message_levitation_board3_stream_airgaps_id = 0xD7;
+} canzero_message_levitation_board1_stream_airgaps;
+static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0xDA;
 typedef struct {
   float m_airgap_left_variance;
   float m_airgap_right_variance;
   float m_left_airgap_controller_variance;
   float m_right_airgap_controller_variance;
-} canzero_message_levitation_board3_stream_airgap_variance;
-static const uint32_t canzero_message_levitation_board3_stream_airgap_variance_id = 0xB7;
+} canzero_message_levitation_board1_stream_airgap_variance;
+static const uint32_t canzero_message_levitation_board1_stream_airgap_variance_id = 0xBA;
 typedef struct {
   float m_left_airgap_controller_p_term;
   float m_left_airgap_controller_i_term;
   float m_left_airgap_controller_d_term;
   float m_left_airgap_controller_output;
-} canzero_message_levitation_board3_stream_controller_debug_1;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_1_id = 0x56;
+} canzero_message_levitation_board1_stream_controller_debug_1;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_1_id = 0x59;
 typedef struct {
   float m_right_airgap_controller_p_term;
   float m_right_airgap_controller_i_term;
   float m_right_airgap_controller_d_term;
   float m_right_airgap_controller_output;
-} canzero_message_levitation_board3_stream_controller_debug_2;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_2_id = 0x76;
+} canzero_message_levitation_board1_stream_controller_debug_2;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_2_id = 0x79;
 typedef struct {
   float m_left_current_controller_p_term;
   float m_left_current_controller_i_term;
   float m_left_current_controller_output;
-} canzero_message_levitation_board3_stream_controller_debug_3;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_3_id = 0x96;
+} canzero_message_levitation_board1_stream_controller_debug_3;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_3_id = 0x99;
 typedef struct {
   float m_right_current_controller_p_term;
   float m_right_current_controller_i_term;
   float m_right_current_controller_output;
-} canzero_message_levitation_board3_stream_controller_debug_4;
-static const uint32_t canzero_message_levitation_board3_stream_controller_debug_4_id = 0xB6;
+} canzero_message_levitation_board1_stream_controller_debug_4;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_4_id = 0xB9;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;

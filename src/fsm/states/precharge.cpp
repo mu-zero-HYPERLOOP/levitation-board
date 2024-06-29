@@ -1,6 +1,7 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "feedthrough_mosfet.h"
+#include "print.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
 #include "sdc_brake.h"
@@ -19,6 +20,7 @@ levitation_state fsm::states::precharge(levitation_command cmd,
                                         Duration time_since_last_transition) {
 
   if (levitation_command_DISARM45 == cmd || levitation_command_ABORT == cmd) {
+    debugPrintf("ERROR_HANDLING: DISARM");
     return levitation_state_DISARMING45;
   }
 
@@ -27,6 +29,7 @@ levitation_state fsm::states::precharge(levitation_command cmd,
   if (time_since_last_transition > MAX_STATE_TIME) {
     canzero_set_command(levitation_command_DISARM45);
     canzero_set_error_precharge_failed(error_flag_ERROR);
+    debugPrintf("ERROR_HANDLING: TIMEOUT");
     return levitation_state_DISARMING45;
   }
 
@@ -43,6 +46,7 @@ levitation_state fsm::states::precharge(levitation_command cmd,
   if (!sdc_brake::request_close()) {
     // Failed to open SDC. (brake pulled).
     canzero_set_command(levitation_command_DISARM45);
+    debugPrintf("ERROR_HANDLING: SDC_REQUEST_FAILED");
     return levitation_state_DISARMING45;
   }
 
