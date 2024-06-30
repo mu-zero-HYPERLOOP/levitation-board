@@ -2614,6 +2614,9 @@ void canzero_can0_poll() {
       case 0xFE:
         canzero_handle_get_req(&frame);
         break;
+      case 0x47:
+        canzero_handle_mother_board_stream_levitation_command(&frame);
+        break;
       case 0x4B:
         canzero_handle_mother_board_stream_debug_settings(&frame);
         break;
@@ -2629,9 +2632,6 @@ void canzero_can1_poll() {
     switch (frame.id) {
       case 0x11E:
         canzero_handle_set_req(&frame);
-        break;
-      case 0x47:
-        canzero_handle_mother_board_stream_levitation_command(&frame);
         break;
       case 0x12C:
         canzero_handle_heartbeat_can1(&frame);
@@ -2694,7 +2694,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 9152366430843156550ull;
+  __oe_config_hash = 9516033052986621148ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
