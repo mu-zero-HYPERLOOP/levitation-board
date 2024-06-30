@@ -33,9 +33,7 @@ levitation_state fsm::states::precharge(levitation_command cmd,
     return levitation_state_DISARMING45;
   }
 
-  if (time_since_last_transition > MIN_STATE_TIME &&
-      (canzero_get_vdc_voltage() >= static_cast<float>(MIN_REQ_VOLTAGE) ||
-       !REQUIRE_VOLTAGE)) {
+  if (time_since_last_transition > MIN_STATE_TIME){
     return levitation_state_READY;
   }
 
