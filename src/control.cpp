@@ -331,8 +331,8 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
       right_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
       CONTROL_UPPER_BOUND * static_cast<float>(vdc));
 
-  const Voltage voltage_left_magnet = Voltage(left_current_pi_output);
-  const Voltage voltage_right_magnet = Voltage(right_current_pi_output);
+  const Voltage voltage_left_magnet = 0_V;
+  const Voltage voltage_right_magnet = 0_V;
 
   debug_left_voltage = voltage_left_magnet;
   debug_right_voltage = voltage_right_magnet;
