@@ -25,7 +25,7 @@ public:
   inline static Timestamp now() {
     using namespace std::chrono;
     microseconds x =
-        duration_cast<microseconds>(system_clock::now().time_since_epoch());
+        duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch());
     return Timestamp(x.count());
   }
 

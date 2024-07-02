@@ -1,5 +1,6 @@
 #include "fsm/error_handling.h"
 #include "canzero/canzero.h"
+#include "print.h"
 #include <algorithm>
 #include <array>
 
@@ -16,6 +17,7 @@ levitation_command fsm::error_handling::approve(levitation_command cmd) {
   const auto max_error_flag_it = std::max_element(error_flags.begin(), error_flags.end());
   const error_flag max_error_flag = *max_error_flag_it;
   if (max_error_flag == error_flag_ERROR){
+    debugPrintf("ERROR_HANDLING: ERROR FLAG!\n");
     // early bail out.
     return levitation_command_DISARM45;
   }
@@ -39,8 +41,10 @@ levitation_command fsm::error_handling::approve(levitation_command cmd) {
   case error_level_INFO:
     return cmd;
   case error_level_WARNING:
+    debugPrintf("ERROR_HANDLING: WARNING!\n");
     return levitation_command_ABORT;
   case error_level_ERROR:
+    debugPrintf("ERROR_HANDLING: ERROR!\n");
     return levitation_command_DISARM45;
   default:
     return levitation_command_ABORT;

@@ -23,17 +23,7 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
   airgap_transition::transition_to_ground(0_s);
 
 
-  const float dutyLL = 0.5;
-  const float dutyLR = 0.5;
-  const float dutyRL = 0.5;
-  const float dutyRR = 0.5;
-
-  GuidancePwmControl pwmControl{};
-  pwmControl.left_l = dutyLL;
-  pwmControl.left_r = dutyLR;
-  pwmControl.right_l = dutyRL;
-  pwmControl.right_r = dutyRR;
-  pwm::control(pwmControl);
+  pwm::control(GuidancePwmControl{});
   pwm::enable_output();
   pwm::disable_trig1();
 

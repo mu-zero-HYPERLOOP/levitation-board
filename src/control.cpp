@@ -215,7 +215,7 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                               pid_left_airgap_parameters.i_min,
                                               pid_left_airgap_parameters.i_max);
 
-    pid_left_airgap_state.d_term = (pid_left_airgap_state.last_error - error) *
+    pid_left_airgap_state.d_term = (error - pid_left_airgap_state.last_error) *
                                    static_cast<float>(pwm::frequency()) *
                                    pid_left_airgap_parameters.Kd;
     pid_left_airgap_state.last_error = error;
@@ -250,7 +250,7 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
         pid_right_airgap_parameters.i_max);
 
     pid_right_airgap_state.d_term =
-        (pid_right_airgap_state.last_error - error) *
+        (error - pid_right_airgap_state.last_error) *
         static_cast<float>(pwm::frequency()) * pid_right_airgap_parameters.Kd;
 
     pid_right_airgap_state.last_error = error;
@@ -277,7 +277,7 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
       std::pow(right_airgap_pid_output * 0.0019f, 3);
 
   left_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
-  right_current_pi_target = std::clamp(right_current_pi_target, 0.0f, 40.0f);
+  right_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
 
   // ====================== CURRENT PIDs =========================
   // Left current PI
@@ -331,8 +331,8 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
       right_current_pi_output, CONTROL_LOWER_BOUND * static_cast<float>(vdc),
       CONTROL_UPPER_BOUND * static_cast<float>(vdc));
 
-  const Voltage voltage_left_magnet = 0_V;
-  const Voltage voltage_right_magnet = 0_V;
+  const Voltage voltage_left_magnet = Voltage(left_current_pi_output);
+  const Voltage voltage_right_magnet = Voltage(right_current_pi_output);
 
   debug_left_voltage = voltage_left_magnet;
   debug_right_voltage = voltage_right_magnet;
