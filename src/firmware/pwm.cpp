@@ -1,6 +1,5 @@
 #include "pwm.h"
 
-#include "core_pins.h"
 #include "xbar.h"
 #include <Arduino.h>
 #include <algorithm>

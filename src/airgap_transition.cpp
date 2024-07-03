@@ -1,12 +1,23 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
-#include "print.h"
 #include "util/metrics.h"
 #include "util/timestamp.h"
 #include "firmware/guidance_board.h"
+#include <algorithm>
 #include <cmath>
 
 static constexpr float sigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
+
+static constexpr float easeOutSine(float x) {
+  return std::clamp(std::sin((float)((x * M_PI) / 2.0f)), 0.0f, 1.0f);
+}
+
+static constexpr float easeInOutSine(float x) {
+  return std::clamp(-(std::cos((float)(M_PI * x)) - 1.0f) / 2.0f, 0.0f, 1.0f);
+}
+
+
+static airgap_transition_mode transition_mode;
 
 struct SigmoidAnimator {
 private:
@@ -50,7 +61,22 @@ public:
     }
     // map [0,1] -> [-5,5]
     /* const float x = alpha * 10.0f - 5.0f; */
-    const float y = alpha;
+    float y;
+    switch (transition_mode) {
+    case airgap_transition_mode_LINEAR:
+      y = alpha;
+      break;
+    case airgap_transition_mode_SIGMOID:
+      y = sigmoid(alpha * 10.0f - 5.0f);
+      break;
+    case airgap_transition_mode_EASE_OUT_SINE:
+      y = easeOutSine(alpha);
+      break;
+    case airgap_transition_mode_EASE_INOUT_SINE:
+      y = easeInOutSine(alpha);
+      break;
+    }
+
     // linear interpolation between start and end.
     return m_start_airgap * (1.0f - y) + m_end_airgap * y;
   }
@@ -68,6 +94,7 @@ static Distance grounded_right;
 static SigmoidAnimator left_animator;
 static SigmoidAnimator right_animator;
 
+
 void airgap_transition::begin() {}
 
 void airgap_transition::calibrate() {
@@ -80,13 +107,13 @@ void airgap_transition::calibrate() {
   right_animator.reset(grounded_right);
 }
 
-void airgap_transition::transition_to_ground(const Time &duration) {
+void airgap_transition::transition_to_ground(const Duration &duration) {
   left_animator.transition_to(grounded_left, duration);
   right_animator.transition_to(grounded_right, duration);
 }
 
 void airgap_transition::transition_to(const Distance &airgap,
-                                      const Time &duration) {
+                                      const Duration &duration) {
   left_animator.transition_to(airgap, duration);
   right_animator.transition_to(airgap, duration);
 }
@@ -101,6 +128,8 @@ void airgap_transition::update() {
 
   const Distance target_right = right_animator.current();
   canzero_set_target_airgap_right(target_right / 1_mm);
+
+  transition_mode = canzero_get_airgap_transition_mode();
 }
 
 

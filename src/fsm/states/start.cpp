@@ -5,8 +5,6 @@
 #include "precharge_mosfet.h"
 #include "sdc_brake.h"
 
-constexpr Time START_TIME = 3_s;
-
 levitation_state fsm::states::start(levitation_command cmd,
                                     Duration time_since_last_transition) {
 
@@ -18,13 +16,13 @@ levitation_state fsm::states::start(levitation_command cmd,
     return levitation_state_STOP;
   }
 
-  airgap_transition::transition_to(Distance(canzero_get_target_airgap() * 1e-3),
-                                   START_TIME);
-  
-  if (airgap_transition::done()){
+  airgap_transition::transition_to(
+      Distance(canzero_get_target_airgap() * 1e-3),
+      Time(canzero_get_airgap_transition_duration()));
+
+  if (airgap_transition::done()) {
     return levitation_state_CONTROL;
   }
-
 
   pwm::enable_output();
   // control set by isr.

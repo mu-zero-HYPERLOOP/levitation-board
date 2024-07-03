@@ -14,6 +14,8 @@ void fsm::begin() {
   canzero_set_error_precharge_failed(error_flag_OK);
   canzero_set_error_arming_failed(error_flag_OK);
   canzero_set_target_airgap(10.0);
+  canzero_set_airgap_transition_mode(airgap_transition_mode_LINEAR);
+  canzero_set_airgap_transition_duration(6);
   canzero_update_continue(canzero_get_time());
 }
 

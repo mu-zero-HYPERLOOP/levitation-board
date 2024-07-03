@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/ema.hpp"
+#include "util/ema.h"
 #include "util/metrics.h"
 #include "util/timestamp.h"
 
