@@ -76,8 +76,8 @@ void sensors::airgaps::calibrate() {
   /* Distance right_target = sensors::airgaps::ground_right(); */
   /* offset_right = right_target - cali_right_filter.get(); */
 
-  offset_right = -28_mm;
-  offset_left = -28_mm;
+  offset_right = 0_mm;
+  offset_left = 0_mm;
 
   for (size_t i = 0; i < left_filter.size(); ++i) {
     const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_l_19);

@@ -156,39 +156,39 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   // ====================== ERROR-HANDLING =====================
 
   const auto now = Timestamp::now();
-  if (magnet_airgap_left >= airgap_error_thresh) {
-    last_airgap_left_ok = now;
-  }
-  if (now - last_airgap_left_ok > airgap_timeout) {
-    debugPrintf("airgap left fault\n");
-    sdc_brake::brake_immediatly();
-    return GuidancePwmControl();
-  }
-  if (magnet_airgap_right >= airgap_error_thresh) {
-    last_airgap_right_ok = now;
-  }
-  if (now - last_airgap_right_ok > airgap_timeout) {
-    debugPrintf("airgap right fault\n");
-    sdc_brake::brake_immediatly();
-    return GuidancePwmControl();
-  }
-  
-  if (current_left <= current_error_thresh) {
-    last_current_left_ok = now;
-  }
-  if (now - last_current_left_ok > current_timeout) {
-    debugPrintf("current left fault\n");
-    sdc_brake::brake_immediatly();
-    return GuidancePwmControl();
-  }
-  if (current_right <= current_error_thresh) {
-    last_current_right_ok = now;
-  }
-  if (now - last_current_right_ok > current_timeout) {
-    debugPrintf("current right fault\n");
-    sdc_brake::brake_immediatly();
-    return GuidancePwmControl();
-  }
+  /* if (magnet_airgap_left >= airgap_error_thresh) { */
+  /*   last_airgap_left_ok = now; */
+  /* } */
+  /* if (now - last_airgap_left_ok > airgap_timeout) { */
+  /*   debugPrintf("airgap left fault\n"); */
+  /*   sdc_brake::brake_immediatly(); */
+  /*   return GuidancePwmControl(); */
+  /* } */
+  /* if (magnet_airgap_right >= airgap_error_thresh) { */
+  /*   last_airgap_right_ok = now; */
+  /* } */
+  /* if (now - last_airgap_right_ok > airgap_timeout) { */
+  /*   debugPrintf("airgap right fault\n"); */
+  /*   sdc_brake::brake_immediatly(); */
+  /*   return GuidancePwmControl(); */
+  /* } */
+  /*  */
+  /* if (current_left <= current_error_thresh) { */
+  /*   last_current_left_ok = now; */
+  /* } */
+  /* if (now - last_current_left_ok > current_timeout) { */
+  /*   debugPrintf("current left fault\n"); */
+  /*   sdc_brake::brake_immediatly(); */
+  /*   return GuidancePwmControl(); */
+  /* } */
+  /* if (current_right <= current_error_thresh) { */
+  /*   last_current_right_ok = now; */
+  /* } */
+  /* if (now - last_current_right_ok > current_timeout) { */
+  /*   debugPrintf("current right fault\n"); */
+  /*   sdc_brake::brake_immediatly(); */
+  /*   return GuidancePwmControl(); */
+  /* } */
 
   // ====================== AIRGAP PIDs =========================
 
@@ -306,6 +306,12 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
       signed_sqrt(right_airgap_pid_output) * 64.5497f *
       static_cast<float>(filtered_right_airgap) +
       std::pow(right_airgap_pid_output * 0.0019f, 3);
+
+  // CONST current !!!
+  left_current_pi_target = 15;
+  right_current_pi_target = 15;
+  // ---------
+
 
   left_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
   right_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
