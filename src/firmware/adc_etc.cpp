@@ -63,6 +63,7 @@ void adc_etc::begin(const AdcEtcBeginInfo &info) {
     break;
   case BIT_10:
     max_adc1_value = 0x3FF; // 1023
+    break;
   case BIT_12:
     max_adc1_value = 0xFFF; // 4095
     break;
@@ -289,7 +290,7 @@ Voltage adc_etc::read_single(ain_pin pin) {
 }
 
 Voltage AdcTrigRes::trig_res(AdcEtcTrigger trig, int segment) {
-  float max_value = trig < 4 ? max_adc1_value : max_adc2_value;
+  float max_value = trig <= 4 ? max_adc1_value : max_adc2_value;
   volatile uint32_t *result_base =
       &IMXRT_ADC_ETC.TRIG[trig].RESULT_1_0 + (segment / 2);
   if (segment % 2) {

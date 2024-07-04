@@ -16,6 +16,16 @@ void FLASHMEM guidance_board::begin() {
   digitalWrite(static_cast<uint8_t>(ctrl_pin::precharge_done_31), false);
   pinMode(static_cast<uint8_t>(ctrl_pin::precharge_start_32), OUTPUT);
   digitalWrite(static_cast<uint8_t>(ctrl_pin::precharge_start_32), false);
+
+  pinMode(static_cast<uint8_t>(ain_pin::i_mag_l_24), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::i_mag_r_25), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::i_mag_total), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::vdc_sense_40), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::disp_sense_lim_l_18), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::disp_sense_lim_r_16), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::disp_sense_mag_l_19), INPUT);
+  pinMode(static_cast<uint8_t>(ain_pin::disp_sense_mag_r_17), INPUT);
+
   xbar::begin();
 }
 

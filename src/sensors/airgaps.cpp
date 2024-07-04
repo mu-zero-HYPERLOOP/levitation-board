@@ -1,5 +1,6 @@
 #include "sensors/airgaps.h"
 #include "avr/pgmspace.h"
+#include "print.h"
 #include "canzero/canzero.h"
 #include "firmware/guidance_board.h"
 #include "sensors/formula/displacement420.h"
@@ -76,8 +77,16 @@ void sensors::airgaps::calibrate() {
   /* Distance right_target = sensors::airgaps::ground_right(); */
   /* offset_right = right_target - cali_right_filter.get(); */
 
-  offset_right = 0_mm;
-  offset_left = 0_mm;
+  if (CANZERO_NODE_ID == node_id_levitation_board1){
+    offset_left = -24.7_mm;
+    offset_right = -24.3_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board2) {
+    offset_left = -24.2_mm;
+    offset_right = -23.5_mm;
+  }else if (CANZERO_NODE_ID == node_id_levitation_board3) {
+    offset_left = -24.3_mm;
+    offset_right = -24.6_mm;
+  }
 
   for (size_t i = 0; i < left_filter.size(); ++i) {
     const Voltage v = guidance_board::sync_read(ain_pin::disp_sense_mag_l_19);

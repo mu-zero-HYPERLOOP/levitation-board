@@ -1,5 +1,6 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
+#include "control.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
@@ -23,6 +24,7 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
   sdc_brake::release_brake();
   sdc_brake::open();
 
+  pwm::control(GuidancePwmControl());
   pwm::disable_output();
   pwm::disable_trig1();
 

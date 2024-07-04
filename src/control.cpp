@@ -1,5 +1,4 @@
 #include "control.h"
-#include "util/timimg.h"
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
 #include "firmware/guidance_board.h"
@@ -8,8 +7,10 @@
 #include "util/boxcar.h"
 #include "util/ema.h"
 #include "util/metrics.h"
+#include "util/timimg.h"
 #include <algorithm>
 #include <avr/pgmspace.h>
+#include <cassert>
 #include <cmath>
 
 static float signed_sqrt(float x) {
@@ -67,7 +68,6 @@ static ExponentialMovingAverage<float> pid_left_airgap_ema{};
 static ExponentialMovingAverage<Distance> pid_left_airgap_conv_ema{};
 static DynamicBoxcar<Distance> pid_left_airgap_conv_boxcar{0_mm, 1};
 
-
 // Right airgap PID
 static PID_parameters pid_right_airgap_parameters;
 static PID_state pid_right_airgap_state;
@@ -102,12 +102,12 @@ static ExponentialMovingAverage<float> debug_right_error2{0.0001};
 // Error handling
 static Timestamp last_airgap_left_ok;
 static Timestamp last_airgap_right_ok;
-static Distance airgap_error_thresh = 5_mm;
-static Duration airgap_timeout = 1_ms;
+static Distance airgap_error_thresh = 3.5_mm;
+static Duration airgap_timeout = 4_ms;
 
 static Timestamp last_current_left_ok;
 static Timestamp last_current_right_ok;
-static Current current_error_thresh = 25_A;
+static Current current_error_thresh = 30_A;
 static Duration current_timeout = 1_s;
 
 void control::begin() {
@@ -145,8 +145,6 @@ void control::begin() {
   reset();
 }
 
-
-
 GuidancePwmControl FASTRUN control::control_loop(Current current_left,
                                                  Current current_right,
                                                  Distance magnet_airgap_left,
@@ -156,39 +154,39 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   // ====================== ERROR-HANDLING =====================
 
   const auto now = Timestamp::now();
-  /* if (magnet_airgap_left >= airgap_error_thresh) { */
-  /*   last_airgap_left_ok = now; */
-  /* } */
-  /* if (now - last_airgap_left_ok > airgap_timeout) { */
-  /*   debugPrintf("airgap left fault\n"); */
-  /*   sdc_brake::brake_immediatly(); */
-  /*   return GuidancePwmControl(); */
-  /* } */
-  /* if (magnet_airgap_right >= airgap_error_thresh) { */
-  /*   last_airgap_right_ok = now; */
-  /* } */
-  /* if (now - last_airgap_right_ok > airgap_timeout) { */
-  /*   debugPrintf("airgap right fault\n"); */
-  /*   sdc_brake::brake_immediatly(); */
-  /*   return GuidancePwmControl(); */
-  /* } */
-  /*  */
-  /* if (current_left <= current_error_thresh) { */
-  /*   last_current_left_ok = now; */
-  /* } */
-  /* if (now - last_current_left_ok > current_timeout) { */
-  /*   debugPrintf("current left fault\n"); */
-  /*   sdc_brake::brake_immediatly(); */
-  /*   return GuidancePwmControl(); */
-  /* } */
-  /* if (current_right <= current_error_thresh) { */
-  /*   last_current_right_ok = now; */
-  /* } */
-  /* if (now - last_current_right_ok > current_timeout) { */
-  /*   debugPrintf("current right fault\n"); */
-  /*   sdc_brake::brake_immediatly(); */
-  /*   return GuidancePwmControl(); */
-  /* } */
+  if (magnet_airgap_left >= airgap_error_thresh) {
+    last_airgap_left_ok = now;
+  }
+  if (now - last_airgap_left_ok > airgap_timeout) {
+    debugPrintf("airgap left fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+  if (magnet_airgap_right >= airgap_error_thresh) {
+    last_airgap_right_ok = now;
+  }
+  if (now - last_airgap_right_ok > airgap_timeout) {
+    debugPrintf("airgap right fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+
+  if (current_left <= current_error_thresh) {
+    last_current_left_ok = now;
+  }
+  if (now - last_current_left_ok > current_timeout) {
+    debugPrintf("current left fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
+  if (current_right <= current_error_thresh) {
+    last_current_right_ok = now;
+  }
+  if (now - last_current_right_ok > current_timeout) {
+    debugPrintf("current right fault\n");
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
+  }
 
   // ====================== AIRGAP PIDs =========================
 
@@ -198,17 +196,19 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
     // error in mm!
     float filtered_airgap_pid;
     switch (pid_left_airgap_parameters.error_filter_mode) {
-      case filter_mode_EMA:
-        pid_left_airgap_ema.push(static_cast<float>(magnet_airgap_left));
-        filtered_airgap_pid = pid_left_airgap_ema.get();
-        break;
-      case filter_mode_BOXCAR:
-        pid_left_airgap_boxcar.push(static_cast<float>(magnet_airgap_left));
-        filtered_airgap_pid = pid_left_airgap_boxcar.get();
-        break;
+    case filter_mode_EMA:
+      pid_left_airgap_ema.push(static_cast<float>(magnet_airgap_left));
+      filtered_airgap_pid = pid_left_airgap_ema.get();
+      break;
+    case filter_mode_BOXCAR:
+      pid_left_airgap_boxcar.push(static_cast<float>(magnet_airgap_left));
+      filtered_airgap_pid = pid_left_airgap_boxcar.get();
+      break;
+    default:
+      filtered_airgap_pid = 0.0f;
     }
     debug_left_airgap = Distance(filtered_airgap_pid);
-    float error = filtered_airgap_pid - static_cast<float>(target);
+    float error = (filtered_airgap_pid - static_cast<float>(target)) * 1e3;
     debug_left_error2.push(error);
 
     pid_left_airgap_state.p_term = error * pid_left_airgap_parameters.Kp;
@@ -237,17 +237,19 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
     // error in mm!
     float filtered_airgap_pid;
     switch (pid_right_airgap_parameters.error_filter_mode) {
-      case filter_mode_EMA:
-        pid_right_airgap_ema.push(static_cast<float>(magnet_airgap_right));
-        filtered_airgap_pid = pid_right_airgap_boxcar.get();
-        break;
-      case filter_mode_BOXCAR:
-        pid_right_airgap_boxcar.push(static_cast<float>(magnet_airgap_left));
-        filtered_airgap_pid =pid_right_airgap_boxcar.get();
-        break;
+    case filter_mode_EMA:
+      pid_right_airgap_ema.push(static_cast<float>(magnet_airgap_right));
+      filtered_airgap_pid = pid_right_airgap_ema.get();
+      break;
+    case filter_mode_BOXCAR:
+      pid_right_airgap_boxcar.push(static_cast<float>(magnet_airgap_right));
+      filtered_airgap_pid = pid_right_airgap_boxcar.get();
+      break;
+    default:
+      filtered_airgap_pid = 0.0f;
     }
     debug_right_airgap = Distance(filtered_airgap_pid);
-    float error = filtered_airgap_pid - static_cast<float>(target);
+    float error = (filtered_airgap_pid - static_cast<float>(target)) * 1e3;
     debug_right_error2.push(error);
 
     pid_right_airgap_state.p_term = error * pid_right_airgap_parameters.Kp;
@@ -272,50 +274,46 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
 
   debug_right_target_force = Force(right_airgap_pid_output);
 
-
   // ==================== FORCE CURRENT CONVERSION ===============
 
-  Distance filtered_left_airgap;
-  switch (pid_left_airgap_parameters.conv_filter_mode){
-  case filter_mode_EMA:
-    pid_left_airgap_conv_ema.push(magnet_airgap_left);
-    filtered_left_airgap = pid_left_airgap_conv_ema.get();
-    break;
-  case filter_mode_BOXCAR:
-    pid_left_airgap_conv_boxcar.push(magnet_airgap_left);
-    filtered_left_airgap = pid_left_airgap_conv_boxcar.get();
-    break;
-  }
-  Distance filtered_right_airgap;
-  switch (pid_right_airgap_parameters.conv_filter_mode){
-  case filter_mode_EMA:
-    pid_right_airgap_conv_ema.push(magnet_airgap_right);
-    filtered_right_airgap = pid_right_airgap_conv_ema.get();
-    break;
-  case filter_mode_BOXCAR:
-    pid_right_airgap_conv_boxcar.push(magnet_airgap_right);
-    filtered_right_airgap = pid_right_airgap_conv_boxcar.get();
-    break;
-  }
+  /* Distance filtered_left_airgap; */
+  /* switch (pid_left_airgap_parameters.conv_filter_mode) { */
+  /* case filter_mode_EMA: */
+  /*   pid_left_airgap_conv_ema.push(magnet_airgap_left); */
+  /*   filtered_left_airgap = pid_left_airgap_conv_ema.get(); */
+  /*   break; */
+  /* case filter_mode_BOXCAR: */
+  /*   pid_left_airgap_conv_boxcar.push(magnet_airgap_left); */
+  /*   filtered_left_airgap = pid_left_airgap_conv_boxcar.get(); */
+  /* default: */
+  /*   filtered_left_airgap = 0_mm; */
+  /*   break; */
+  /* } */
+  float left_current_pi_target = signed_sqrt(left_airgap_pid_output) *
+                                     64.5497f *
+                                     static_cast<float>(debug_left_airgap) +
+                                 std::pow(left_airgap_pid_output * 0.0019f, 3);
+  left_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
 
-  float left_current_pi_target =
-      signed_sqrt(left_airgap_pid_output) * 64.5497f *
-          static_cast<float>(filtered_left_airgap) +
-      std::pow(left_airgap_pid_output * 0.0019f, 3);
+  /* Distance filtered_right_airgap; */
+  /* switch (pid_right_airgap_parameters.conv_filter_mode) { */
+  /* case filter_mode_EMA: */
+  /*   pid_right_airgap_conv_ema.push(magnet_airgap_right); */
+  /*   filtered_right_airgap = pid_right_airgap_conv_ema.get(); */
+  /*   break; */
+  /* case filter_mode_BOXCAR: */
+  /*   pid_right_airgap_conv_boxcar.push(magnet_airgap_right); */
+  /*   filtered_right_airgap = pid_right_airgap_conv_boxcar.get(); */
+  /* default: */
+  /*   filtered_right_airgap = 0_mm; */
+  /*   break; */
+  /* } */
+
   float right_current_pi_target =
       signed_sqrt(right_airgap_pid_output) * 64.5497f *
-      static_cast<float>(filtered_right_airgap) +
+          static_cast<float>(debug_right_airgap) +
       std::pow(right_airgap_pid_output * 0.0019f, 3);
-
-  // CONST current !!!
-  left_current_pi_target = 15;
-  right_current_pi_target = 15;
-  // ---------
-
-
-  left_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
-  right_current_pi_target = std::clamp(left_current_pi_target, 0.0f, 40.0f);
-
+  right_current_pi_target = std::clamp(right_current_pi_target, 0.0f, 40.0f);
 
   // ====================== CURRENT PIDs =========================
   // Left current PI
@@ -355,8 +353,6 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
       pi_right_current_state.p_term + pi_right_current_state.i_term;
 
   // =============== OUTPUT ==============
-
-
 
   constexpr float CONTROL_LOWER_BOUND = -0.9f;
   constexpr float CONTROL_UPPER_BOUND = 0.9f;
@@ -401,7 +397,6 @@ void control::reset() {
   const pid_parameters airgap_pid = canzero_get_airgap_pid();
   const pid_parameters_extra airgap_pid_extra = canzero_get_airgap_pid_extra();
 
-
   debug_left_error2.reset(0);
   debug_right_error2.reset(0);
 
@@ -421,17 +416,20 @@ void control::reset() {
     pid_left_airgap_ema.reset(canzero_get_airgap_left() * 1e-3);
     break;
   case filter_mode_BOXCAR:
-    pid_left_airgap_boxcar.reset(canzero_get_airgap_left() * 1e-3, airgap_pid_extra.m_boxcar_n);
+    pid_left_airgap_boxcar.reset(canzero_get_airgap_left() * 1e-3,
+                                 airgap_pid_extra.m_boxcar_n);
     break;
   }
-  pid_left_airgap_parameters.conv_filter_mode = airgap_pid_extra.m_conv_filter_mode;
-  switch(airgap_pid_extra.m_conv_filter_mode){
+  pid_left_airgap_parameters.conv_filter_mode =
+      airgap_pid_extra.m_conv_filter_mode;
+  switch (pid_left_airgap_parameters.conv_filter_mode) {
   case filter_mode_EMA:
     pid_left_airgap_conv_ema.set_alpha(airgap_pid_extra.m_conv_ema_alpha);
     pid_left_airgap_conv_ema.reset(Distance(canzero_get_airgap_left() * 1e-3));
     break;
   case filter_mode_BOXCAR:
-    pid_left_airgap_conv_boxcar.reset(Distance(canzero_get_airgap_left() * 1e-3),
+    pid_left_airgap_conv_boxcar.reset(
+        Distance(canzero_get_airgap_left() * 1e-3),
         airgap_pid_extra.m_conv_boxcar_n);
     break;
   }
@@ -447,23 +445,28 @@ void control::reset() {
   pid_right_airgap_parameters.i_min = airgap_pid_extra.m_Ki_min;
   pid_right_airgap_parameters.i_max = airgap_pid_extra.m_Ki_max;
   pid_right_airgap_parameters.o_max = airgap_pid_extra.m_force_max;
-  pid_right_airgap_parameters.error_filter_mode = airgap_pid_extra.m_filter_mode;
-  switch (pid_right_airgap_parameters.error_filter_mode){
+  pid_right_airgap_parameters.error_filter_mode =
+      airgap_pid_extra.m_filter_mode;
+  switch (pid_right_airgap_parameters.error_filter_mode) {
   case filter_mode_EMA:
     pid_right_airgap_ema.set_alpha(airgap_pid_extra.m_conv_ema_alpha);
     pid_right_airgap_ema.reset(canzero_get_airgap_left() * 1e-3);
     break;
   case filter_mode_BOXCAR:
-    pid_right_airgap_boxcar.reset(canzero_get_airgap_right() * 1e-3, airgap_pid_extra.m_boxcar_n);
+    pid_right_airgap_boxcar.reset(canzero_get_airgap_right() * 1e-3,
+                                  airgap_pid_extra.m_boxcar_n);
     break;
   }
-  switch(pid_right_airgap_parameters.conv_filter_mode){
+  pid_right_airgap_parameters.conv_filter_mode = airgap_pid_extra.m_conv_filter_mode;
+  switch (pid_right_airgap_parameters.conv_filter_mode) {
   case filter_mode_EMA:
     pid_right_airgap_conv_ema.set_alpha(airgap_pid_extra.m_conv_ema_alpha);
-    pid_right_airgap_conv_ema.reset(Distance(canzero_get_airgap_right() * 1e-3));
+    pid_right_airgap_conv_ema.reset(
+        Distance(canzero_get_airgap_right() * 1e-3));
     break;
   case filter_mode_BOXCAR:
-    pid_right_airgap_conv_boxcar.reset(Distance(canzero_get_airgap_right() * 1e-3), 
+    pid_right_airgap_conv_boxcar.reset(
+        Distance(canzero_get_airgap_right() * 1e-3),
         airgap_pid_extra.m_conv_boxcar_n);
     break;
   }
@@ -471,7 +474,6 @@ void control::reset() {
   pid_right_airgap_state.i_term = 0;
   pid_right_airgap_state.d_term = 0;
   pid_right_airgap_state.last_error = 0;
-
   const pi_parameters current_pi = canzero_get_current_pi();
   const pi_parameters_extra current_pi_extra = canzero_get_current_pi_extra();
 
@@ -528,8 +530,6 @@ void FASTRUN control::update() {
   canzero_set_right_current_controller_p_term(pi_right_current_state.p_term);
   canzero_set_right_current_controller_i_term(pi_right_current_state.i_term);
   canzero_set_right_current_controller_output(debug_right_voltage / 1_V);
-
-
 
   const Frequency isr_frequency = isr_interval_timer.frequency();
 

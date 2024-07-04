@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <cstddef>
+#include <cstdlib>
 #include <vector>
 
 /// Cool name for a simple moving average filter, where all weights are the same!
@@ -51,7 +52,7 @@ template<typename base_t> struct DynamicBoxcar{
 public:
   explicit DynamicBoxcar(const base_t &inital, const size_t size)
   {
-    m_values.resize(size);
+    m_size = size;
     for (unsigned int i = 0; i < size; ++i) {
       m_values[i] = inital;
     }
@@ -64,17 +65,17 @@ public:
     m_sum -= m_values[m_idx];
     m_values[m_idx] = v;
     m_sum += m_values[m_idx];
-    m_avg = m_sum / static_cast<float>(m_values.size());
-    m_idx = (m_idx + 1) % m_values.size();
+    m_avg = m_sum / static_cast<float>(m_size);
+    m_idx = (m_idx + 1) % m_size;
   }
 
   void reset(const base_t& v, const size_t size) {
-    m_values.resize(size);
+    m_size = size;
     // NOTE: This is a horrible impl.
-    for (unsigned int i = 0; i < m_values.size(); ++i){
+    for (unsigned int i = 0; i < m_size; ++i){
       m_values[i] = v;
     }
-    m_sum = v * m_values.size();
+    m_sum = v * m_size;
     m_avg = v;
     m_idx = 0;
   }
@@ -82,11 +83,12 @@ public:
   base_t &get() {return m_avg;}
 
   size_t size() {
-    return m_values.size();
+    return m_size;
   }
 
 private:
-  std::vector<base_t> m_values;
+  base_t m_values[1000];
+  size_t m_size;
   base_t m_sum;
   size_t m_idx;
   base_t m_avg;

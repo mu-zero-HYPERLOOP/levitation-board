@@ -1,5 +1,6 @@
 #include "airgap_transition.h"
 #include "canzero/canzero.h"
+#include "control.h"
 #include "feedthrough_mosfet.h"
 #include "fsm/states.h"
 #include "precharge_mosfet.h"
@@ -31,7 +32,7 @@ levitation_state fsm::states::arming45(levitation_command cmd,
     return levitation_state_PRECHARGE;
   }
 
-  pwm::control(PwmControl());
+  pwm::control(GuidancePwmControl());
   pwm::enable_output();
   pwm::disable_trig1();
 

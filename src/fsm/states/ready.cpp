@@ -24,7 +24,6 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
 
 
   pwm::control(GuidancePwmControl{});
-  pwm::enable_output();
   pwm::disable_trig1();
 
   if (!sdc_brake::request_close()){

@@ -220,12 +220,12 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_airgaps(c
   }
   frame->id = 0x11C;
   frame->dlc = 8;
-  uint32_t airgap_left_0 = ((msg->m_airgap_left - 0) / 0.00030518043793392844) + 0.5f;
+  uint32_t airgap_left_0 = ((msg->m_airgap_left - 0) / 0.0007629510948348211) + 0.5f;
   if (airgap_left_0 > 0xFFFF) {
     airgap_left_0 = 0xFFFF;
   }
   ((uint32_t*)data)[0] = airgap_left_0;
-  uint32_t airgap_right_16 = ((msg->m_airgap_right - 0) / 0.00030518043793392844) + 0.5f;
+  uint32_t airgap_right_16 = ((msg->m_airgap_right - 0) / 0.0007629510948348211) + 0.5f;
   if (airgap_right_16 > 0xFFFF) {
     airgap_right_16 = 0xFFFF;
   }
@@ -1221,7 +1221,7 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
     break;
   }
   case 22: {
-    resp.m_data |= min_u32((__oe_airgap_left - (0)) / 0.00030518043793392844, 0xFFFF) << 0;
+    resp.m_data |= min_u32((__oe_airgap_left - (0)) / 0.0007629510948348211, 0xFFFF) << 0;
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 1;
     resp.m_header.m_toggle = 0;
@@ -1235,7 +1235,7 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
     break;
   }
   case 24: {
-    resp.m_data |= min_u32((__oe_airgap_right - (0)) / 0.00030518043793392844, 0xFFFF) << 0;
+    resp.m_data |= min_u32((__oe_airgap_right - (0)) / 0.0007629510948348211, 0xFFFF) << 0;
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 1;
     resp.m_header.m_toggle = 0;
@@ -2000,7 +2000,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     float airgap_left_tmp;
-    airgap_left_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00030518043793392844 + 0);
+    airgap_left_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.0007629510948348211 + 0);
     canzero_set_airgap_left(airgap_left_tmp);
     break;
   }
@@ -2018,7 +2018,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     float airgap_right_tmp;
-    airgap_right_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00030518043793392844 + 0);
+    airgap_right_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.0007629510948348211 + 0);
     canzero_set_airgap_right(airgap_right_tmp);
     break;
   }
@@ -2859,7 +2859,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 13292579970420444862ull;
+  __oe_config_hash = 516482641703099876ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -3393,7 +3393,7 @@ void canzero_send_control_active() {
 }
 void canzero_send_airgap_left() {
   canzero_message_get_resp msg;
-  msg.m_data |= min_u32((__oe_airgap_left - (0)) / 0.00030518043793392844, 0xFFFF) << 0;
+  msg.m_data |= min_u32((__oe_airgap_left - (0)) / 0.0007629510948348211, 0xFFFF) << 0;
   msg.m_header.m_eof = 1;
   msg.m_header.m_sof = 1;
   msg.m_header.m_toggle = 0;
@@ -3419,7 +3419,7 @@ void canzero_send_airgap_left_variance() {
 }
 void canzero_send_airgap_right() {
   canzero_message_get_resp msg;
-  msg.m_data |= min_u32((__oe_airgap_right - (0)) / 0.00030518043793392844, 0xFFFF) << 0;
+  msg.m_data |= min_u32((__oe_airgap_right - (0)) / 0.0007629510948348211, 0xFFFF) << 0;
   msg.m_header.m_eof = 1;
   msg.m_header.m_sof = 1;
   msg.m_header.m_toggle = 0;
