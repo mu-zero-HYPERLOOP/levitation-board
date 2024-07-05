@@ -341,6 +341,10 @@ static inline error_level_config canzero_get_error_level_config_mcu_temperature(
   extern error_level_config __oe_error_level_config_mcu_temperature;
   return __oe_error_level_config_mcu_temperature;
 }
+static inline uint8_t canzero_get_last_node_missed() {
+  extern uint8_t __oe_last_node_missed;
+  return __oe_last_node_missed;
+}
 static inline float canzero_get_gamepad_lt2() {
   extern float __oe_gamepad_lt2;
   return __oe_gamepad_lt2;
@@ -485,11 +489,11 @@ typedef struct {
   get_resp_header m_header;
   uint32_t m_data;
 } canzero_message_get_resp;
-static const uint32_t canzero_message_get_resp_id = 0x11D;
+static const uint32_t canzero_message_get_resp_id = 0x19D;
 typedef struct {
   set_resp_header m_header;
 } canzero_message_set_resp;
-static const uint32_t canzero_message_set_resp_id = 0x13D;
+static const uint32_t canzero_message_set_resp_id = 0x1BD;
 typedef struct {
   levitation_state m_state;
   sdc_status m_sdc_status;
@@ -498,7 +502,11 @@ typedef struct {
   sdc_status m_precharge_status;
   sdc_status m_feedthrough_status;
 } canzero_message_levitation_board1_stream_state;
-static const uint32_t canzero_message_levitation_board1_stream_state_id = 0xD2;
+static const uint32_t canzero_message_levitation_board1_stream_state_id = 0xD6;
+typedef struct {
+  uint64_t m_config_hash;
+} canzero_message_levitation_board1_stream_config_hash;
+static const uint32_t canzero_message_levitation_board1_stream_config_hash_id = 0x96;
 typedef struct {
   error_flag m_assertion_fault;
   error_flag m_error_arming_failed;
@@ -511,106 +519,104 @@ typedef struct {
   error_level m_error_level_magnet_temperature_left;
   error_level m_error_level_magnet_temperature_right;
   error_level m_error_level_mcu_temperature;
+  uint8_t m_last_node_missed;
 } canzero_message_levitation_board1_stream_errors;
-static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0xB2;
+static const uint32_t canzero_message_levitation_board1_stream_errors_id = 0xB6;
 typedef struct {
   float m_magnet_temperature_left1;
   float m_magnet_temperature_right1;
   float m_mcu_temperature;
 } canzero_message_levitation_board1_stream_temperatures;
-static const uint32_t canzero_message_levitation_board1_stream_temperatures_id = 0xDA;
+static const uint32_t canzero_message_levitation_board1_stream_temperatures_id = 0x9B;
 typedef struct {
   float m_vdc_voltage;
   float m_current_left;
   float m_current_right;
   float m_input_current;
 } canzero_message_levitation_board1_stream_voltage_and_currents;
-static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0xFA;
+static const uint32_t canzero_message_levitation_board1_stream_voltage_and_currents_id = 0xBB;
 typedef struct {
   float m_airgap_left;
   float m_airgap_right;
   float m_target_airgap_left;
   float m_target_airgap_right;
 } canzero_message_levitation_board1_stream_airgaps;
-static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0xDB;
+static const uint32_t canzero_message_levitation_board1_stream_airgaps_id = 0x11C;
 typedef struct {
   float m_left_airgap_controller_p_term;
   float m_left_airgap_controller_i_term;
   float m_left_airgap_controller_d_term;
   float m_left_airgap_controller_output;
 } canzero_message_levitation_board1_stream_controller_debug_1;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_1_id = 0x5A;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_1_id = 0x15C;
 typedef struct {
   float m_right_airgap_controller_p_term;
   float m_right_airgap_controller_i_term;
   float m_right_airgap_controller_d_term;
   float m_right_airgap_controller_output;
 } canzero_message_levitation_board1_stream_controller_debug_2;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_2_id = 0x7A;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_2_id = 0x17C;
 typedef struct {
   float m_left_current_controller_p_term;
   float m_left_current_controller_i_term;
   float m_left_current_controller_output;
   float m_left_current_controller_target;
 } canzero_message_levitation_board1_stream_controller_debug_3;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_3_id = 0x9A;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_3_id = 0x5B;
 typedef struct {
   float m_right_current_controller_p_term;
   float m_right_current_controller_i_term;
   float m_right_current_controller_output;
   float m_right_current_controller_target;
 } canzero_message_levitation_board1_stream_controller_debug_4;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug_4_id = 0xBA;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug_4_id = 0x7B;
 typedef struct {
   float m_left_airgap_controller_airgap;
   float m_left_airgap_controller_error2;
   float m_right_airgap_controller_airgap;
   float m_right_airgap_controller_error2;
 } canzero_message_levitation_board1_stream_controller_debug5;
-static const uint32_t canzero_message_levitation_board1_stream_controller_debug5_id = 0xFB;
+static const uint32_t canzero_message_levitation_board1_stream_controller_debug5_id = 0x13C;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can0;
-static const uint32_t canzero_message_heartbeat_can0_id = 0x14F;
+static const uint32_t canzero_message_heartbeat_can0_id = 0x1D4;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
   uint8_t m_ticks_next;
 } canzero_message_heartbeat_can1;
-static const uint32_t canzero_message_heartbeat_can1_id = 0x14E;
+static const uint32_t canzero_message_heartbeat_can1_id = 0x1D3;
 typedef struct {
   get_req_header m_header;
 } canzero_message_get_req;
-static const uint32_t canzero_message_get_req_id = 0x11E;
+static const uint32_t canzero_message_get_req_id = 0x19E;
 typedef struct {
   set_req_header m_header;
   uint32_t m_data;
 } canzero_message_set_req;
-static const uint32_t canzero_message_set_req_id = 0x13E;
+static const uint32_t canzero_message_set_req_id = 0x1BE;
 typedef struct {
   levitation_command m_levitation_command;
 } canzero_message_mother_board_stream_levitation_command;
-static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x49;
+static const uint32_t canzero_message_mother_board_stream_levitation_command_id = 0x4D;
 typedef struct {
   float m_target_airgap;
   float m_airgap_transition_duration;
   airgap_transition_mode m_airgap_transition_mode;
 } canzero_message_mother_board_stream_levitation_config;
-static const uint32_t canzero_message_mother_board_stream_levitation_config_id = 0x69;
+static const uint32_t canzero_message_mother_board_stream_levitation_config_id = 0x6D;
 typedef struct {
   bool_t m_ignore_45v;
 } canzero_message_mother_board_stream_debug_settings;
-static const uint32_t canzero_message_mother_board_stream_debug_settings_id = 0x4D;
+static const uint32_t canzero_message_mother_board_stream_debug_settings_id = 0x51;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);
 void canzero_init();
-static inline void canzero_set_config_hash(uint64_t value){
-  extern uint64_t __oe_config_hash;
-  __oe_config_hash = value;
-}
+void canzero_set_config_hash(uint64_t value);
 
 static inline void canzero_set_build_time(date_time value){
   extern date_time __oe_build_time;
@@ -775,6 +781,8 @@ static inline void canzero_set_error_level_config_mcu_temperature(error_level_co
   extern error_level_config __oe_error_level_config_mcu_temperature;
   __oe_error_level_config_mcu_temperature = value;
 }
+
+void canzero_set_last_node_missed(uint8_t value);
 
 static inline void canzero_set_gamepad_lt2(float value){
   extern float __oe_gamepad_lt2;
@@ -1038,6 +1046,8 @@ void canzero_send_error_level_config_magnet_temperature();
 void canzero_send_mcu_temperature();
 
 void canzero_send_error_level_config_mcu_temperature();
+
+void canzero_send_last_node_missed();
 
 void canzero_send_gamepad_lt2();
 
