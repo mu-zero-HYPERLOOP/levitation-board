@@ -24,7 +24,7 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
 
 
   pwm::control(GuidancePwmControl{});
-  pwm::disable_trig1();
+  pwm::enable_trig1();
 
   if (!sdc_brake::request_close()){
     // Close SDC Failed. (brake pulled).

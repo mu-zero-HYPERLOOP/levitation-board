@@ -2,4 +2,8 @@
 .vscode
 .cache/
 compile_commands.json
+*.csv
+plot.py
+poetry.lock
+pyproject.toml
 /build
