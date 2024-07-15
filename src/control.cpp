@@ -119,19 +119,19 @@ void control::begin() {
   canzero_set_airgap_pid(airgap_pid);
   const pid_parameters_extra airgap_pid_extra = {
       .m_Ki_min = 0.0f,
-      .m_Ki_max = 400.0f,
-      .m_force_max = 550.0f,
-      .m_filter_mode = filter_mode_EMA,
-      .m_boxcar_n = 200,
+      .m_Ki_max = 550.0f,
+      .m_force_max = 650.0f,
+      .m_filter_mode = filter_mode_BOXCAR,
+      .m_boxcar_n = 50,
       .m_ema_alpha = 0.03975,
-      .m_conv_filter_mode = filter_mode_EMA,
-      .m_conv_boxcar_n = 300,
-      .m_conv_ema_alpha = 0.001,
+      .m_conv_filter_mode = filter_mode_BOXCAR,
+      .m_conv_boxcar_n = 50,
+      .m_conv_ema_alpha = 1,
   };
   canzero_set_airgap_pid_extra(airgap_pid_extra);
   const pi_parameters current_pi = {
-      .m_Kp = 2.0f,
-      .m_Ki = 0.5f,
+      .m_Kp = 20.0f,
+      .m_Ki = 10.0f,
   };
   canzero_set_current_pi(current_pi);
   const pi_parameters_extra current_pi_extra = {
@@ -383,11 +383,6 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
   float dutyLR = 0.5 - controlLeft / 2;
   float dutyRL = 0.5 + controlRight / 2;
   float dutyRR = 0.5 - controlRight / 2;
-
-  dutyLL = 0.0f;
-  dutyLR = 0.0f;
-  dutyRL = 0.0f;
-  dutyRR = 0.0f;
 
   GuidancePwmControl pwmControl{};
   pwmControl.left_l = dutyLL;
