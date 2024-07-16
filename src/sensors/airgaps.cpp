@@ -43,7 +43,7 @@ static void on_right_disp(const Voltage &v) {
     canzero_set_airgap_right(0);
     return;
   }
-  canzero_set_error_airgap_left_invalid(error_flag_OK);
+  canzero_set_error_airgap_right_invalid(error_flag_OK);
   const Distance disp = sensors::airgaps::conv_right(v);
   right_filter.push(disp);
   canzero_set_airgap_right(disp / 1_mm);
