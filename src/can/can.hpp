@@ -123,7 +123,7 @@ private:
     }
   }
 
-  typedef FlexCAN_T4<CAN::FlexCanModule(), RX_SIZE_256, TX_SIZE_1024> FlexCAN;
+  typedef FlexCAN_T4<CAN::FlexCanModule(), RX_SIZE_256, TX_SIZE_128> FlexCAN;
 
   static FlexCAN m_flexcan;
   static RxSoftwareFifo m_fifo;
