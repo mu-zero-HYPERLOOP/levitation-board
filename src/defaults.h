@@ -18,4 +18,14 @@ static void can_defaults() {
   canzero_set_error_level_magnet_temperature_right(error_level_OK);
 
   canzero_set_ignore_45v(bool_t_FALSE);
+
+  canzero_set_error_input_current_invalid(error_flag_OK);
+  canzero_set_error_magnet_current_left_invalid(error_flag_OK);
+  canzero_set_error_magnet_current_right_invalid(error_flag_OK);
+  canzero_set_error_airgap_left_invalid(error_flag_OK);
+  canzero_set_error_airgap_right_invalid(error_flag_OK);
+  canzero_set_error_vdc_voltage_invalid(error_flag_OK);
+  canzero_set_error_mcu_temperature_invalid(error_flag_OK);
+  canzero_set_error_magnet_temperature_left_invalid(error_flag_OK);
+  canzero_set_error_magnet_temperature_right_invalid(error_flag_OK);
 }
