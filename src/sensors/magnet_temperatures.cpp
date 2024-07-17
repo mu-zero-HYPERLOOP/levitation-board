@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <cassert>
 
-static DMAMEM BoxcarFilter<Temperature, 100> left_filter(24_Celcius);
-static DMAMEM BoxcarFilter<Temperature, 100> right_filter(24_Celcius);
+static DMAMEM BoxcarFilter<Temperature, 1000> left_filter(24_Celcius);
+static DMAMEM BoxcarFilter<Temperature, 1000> right_filter(24_Celcius);
 
 static DMAMEM ErrorLevelRangeCheck<EXPECT_UNDER>
     error_check_left(canzero_get_magnet_temperature_left,
@@ -62,11 +62,11 @@ void sensors::magnet_temperatures::begin() {
   canzero_set_error_level_magnet_temperature_left(error_level_OK);
   canzero_set_error_level_magnet_temperature_right(error_level_OK);
   canzero_set_error_level_config_magnet_temperature(error_level_config{
-      .m_info_thresh = 45,
+      .m_info_thresh = 60,
       .m_info_timeout = 5,
-      .m_warning_thresh = 65,
+      .m_warning_thresh = 80,
       .m_warning_timeout = 5,
-      .m_error_thresh = 80,
+      .m_error_thresh = 100,
       .m_error_timeout = 5,
       .m_ignore_info = bool_t_FALSE,
       .m_ignore_warning = bool_t_FALSE,
