@@ -58,7 +58,6 @@ int main() {
   fsm::finish_init(); 
   debugPrintf("Finish init\n");
   while(true){
-    debugPrintf("airgap invalid: %u\n", canzero_get_error_airgap_left_invalid());
     // Receive from CAN
     canzero_can0_poll();
     canzero_can1_poll();
