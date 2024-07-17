@@ -34,7 +34,7 @@ static void on_left_value(const Voltage &v) {
   const Resistance r_ptx = sensors::formula::r1_of_voltage_divider(
       4.9_V, v, sensors::magnet_temperatures::R_MEAS);
   const Temperature temp =
-      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_L);
+      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_L) - 15_K;
   left_filter.push(temp);
   canzero_set_magnet_temperature_left(
       static_cast<float>(left_filter.get() - 0_Celcius));
@@ -50,7 +50,7 @@ static void on_right_value(const Voltage &v) {
   const Resistance r_ptx = sensors::formula::r1_of_voltage_divider(
       4.9_V, v, sensors::magnet_temperatures::R_MEAS);
   const Temperature temp =
-      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_R);
+      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_R) - 15_K;
   right_filter.push(temp);
   canzero_set_magnet_temperature_right(
       static_cast<float>(right_filter.get() - 0_Celcius));
