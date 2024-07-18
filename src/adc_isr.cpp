@@ -30,12 +30,12 @@ void adc_isr::begin() {
   canzero_set_error_level_magnet_current_left(error_level_OK);
   canzero_set_error_level_magnet_current_right(error_level_OK);
   canzero_set_error_level_config_magnet_current(error_level_config{
-      .m_info_thresh = 15,
-      .m_info_timeout = 2,
-      .m_warning_thresh = 20,
+      .m_info_thresh = 20,
+      .m_info_timeout = 1,
+      .m_warning_thresh = 30,
       .m_warning_timeout = 1,
-      .m_error_thresh = 25,
-      .m_error_timeout = 1,
+      .m_error_thresh = 30,
+      .m_error_timeout = 3,
       .m_ignore_info = bool_t_FALSE,
       .m_ignore_warning = bool_t_FALSE,
       .m_ignore_error = bool_t_FALSE,
