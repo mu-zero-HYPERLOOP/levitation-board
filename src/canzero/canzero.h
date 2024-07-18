@@ -229,6 +229,18 @@ static inline error_flag canzero_get_error_heartbeat_miss() {
   extern error_flag __oe_error_heartbeat_miss;
   return __oe_error_heartbeat_miss;
 }
+static inline error_flag canzero_get_error_sdc_brake() {
+  extern error_flag __oe_error_sdc_brake;
+  return __oe_error_sdc_brake;
+}
+static inline error_flag canzero_get_error_magnet_current_left_unexpected() {
+  extern error_flag __oe_error_magnet_current_left_unexpected;
+  return __oe_error_magnet_current_left_unexpected;
+}
+static inline error_flag canzero_get_error_magnet_current_right_unexpected() {
+  extern error_flag __oe_error_magnet_current_right_unexpected;
+  return __oe_error_magnet_current_right_unexpected;
+}
 static inline error_level canzero_get_error_level_vdc_voltage() {
   extern error_level __oe_error_level_vdc_voltage;
   return __oe_error_level_vdc_voltage;
@@ -540,6 +552,9 @@ typedef struct {
   error_flag m_error_arming_failed;
   error_flag m_error_precharge_failed;
   error_flag m_error_heartbeat_miss;
+  error_flag m_error_sdc_brake;
+  error_flag m_error_magnet_current_left_unexpected;
+  error_flag m_error_magnet_current_right_unexpected;
   error_level m_error_level_vdc_voltage;
   error_level m_error_level_magnet_current_left;
   error_level m_error_level_magnet_current_right;
@@ -678,6 +693,12 @@ void canzero_set_error_arming_failed(error_flag value);
 void canzero_set_error_precharge_failed(error_flag value);
 
 void canzero_set_error_heartbeat_miss(error_flag value);
+
+void canzero_set_error_sdc_brake(error_flag value);
+
+void canzero_set_error_magnet_current_left_unexpected(error_flag value);
+
+void canzero_set_error_magnet_current_right_unexpected(error_flag value);
 
 void canzero_set_error_level_vdc_voltage(error_level value);
 
@@ -1019,6 +1040,12 @@ void canzero_send_error_arming_failed();
 void canzero_send_error_precharge_failed();
 
 void canzero_send_error_heartbeat_miss();
+
+void canzero_send_error_sdc_brake();
+
+void canzero_send_error_magnet_current_left_unexpected();
+
+void canzero_send_error_magnet_current_right_unexpected();
 
 void canzero_send_error_level_vdc_voltage();
 
