@@ -108,7 +108,7 @@ static Duration airgap_timeout = 4_ms;
 static Timestamp last_current_left_ok;
 static Timestamp last_current_right_ok;
 static Current current_error_thresh = 30_A;
-static Duration current_timeout = 1_s;
+static Duration current_timeout = 3_s;
 
 void control::begin() {
   const pid_parameters airgap_pid = {
