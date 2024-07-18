@@ -27,6 +27,7 @@ static void on_value(const Voltage &v) {
                                                      : error_flag_ERROR);
   } else {
     i = 0_A;
+    filter.reset(0_A);
   }
   filter.push(i);
   canzero_set_input_current(static_cast<float>(filter.get()));
