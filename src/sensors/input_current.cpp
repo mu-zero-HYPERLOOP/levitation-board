@@ -11,19 +11,21 @@
 static DMAMEM ErrorLevelRangeCheck<EXPECT_UNDER>
     error_check(canzero_get_input_current,
                 canzero_get_error_level_config_input_current,
+                canzero_set_error_level_input_current);
 
-                canzero_set_error_level_input_current); static DMAMEM BoxcarFilter<Current, 10> filter(0_A);
+static DMAMEM BoxcarFilter<Current, 1000> filter(0_A);
 
 static void on_value(const Voltage &v) {
   Current i;
   if (canzero_get_state() == levitation_state_STOP ||
       canzero_get_state() == levitation_state_START ||
-      canzero_get_state() == levitation_state_CONTROL){
+      canzero_get_state() == levitation_state_CONTROL) {
     i = sensors::formula::current_sense(
         v, sensors::input_current::INPUT_CURRENT_GAIN, 1_mOhm);
     const bool sensible = i <= 100_A && i >= -20_A;
-    canzero_set_error_input_current_invalid(sensible ? error_flag_OK : error_flag_ERROR);
-  }else {
+    canzero_set_error_input_current_invalid(sensible ? error_flag_OK
+                                                     : error_flag_ERROR);
+  } else {
     i = 0_A;
   }
   filter.push(i);
