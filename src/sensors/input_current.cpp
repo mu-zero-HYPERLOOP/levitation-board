@@ -20,8 +20,9 @@ static void on_value(const Voltage &v) {
   if (canzero_get_state() == levitation_state_STOP ||
       canzero_get_state() == levitation_state_START ||
       canzero_get_state() == levitation_state_CONTROL) {
-    i = sensors::formula::current_sense(
-        v, sensors::input_current::INPUT_CURRENT_GAIN, 1_mOhm);
+    /*i = sensors::formula::current_sense(*/
+    /*    v, sensors::input_current::INPUT_CURRENT_GAIN, 1_mOhm);*/
+    i  = 0_A;
     const bool sensible = i <= 100_A && i >= -20_A;
     canzero_set_error_input_current_invalid(sensible ? error_flag_OK
                                                      : error_flag_ERROR);

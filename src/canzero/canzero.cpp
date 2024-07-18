@@ -129,7 +129,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_state(can
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xD6;
+  frame->id = 0xF7;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 4)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 4;
@@ -143,7 +143,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_config_ha
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x96;
+  frame->id = 0xB7;
   frame->dlc = 8;
   ((volatile uint64_t*)data)[0] = msg->m_config_hash;
 }
@@ -152,7 +152,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_errors(ca
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xB6;
+  frame->id = 0xD7;
   frame->dlc = 5;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_airgap_left_invalid & (0xFF >> (8 - 1))) << 1;
@@ -180,7 +180,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_temperatu
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x7B;
+  frame->id = 0x5B;
   frame->dlc = 3;
   uint32_t magnet_temperature_left_0 = ((msg->m_magnet_temperature_left - -1) / 0.592156862745098) + 0.5f;
   if (magnet_temperature_left_0 > 0xFF) {
@@ -203,7 +203,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_voltage_a
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x9B;
+  frame->id = 0x7B;
   frame->dlc = 8;
   uint32_t vdc_voltage_0 = ((msg->m_vdc_voltage - 0) / 0.0015259021896696422) + 0.5f;
   if (vdc_voltage_0 > 0xFFFF) {
@@ -231,7 +231,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_airgaps(c
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x11C;
+  frame->id = 0xFC;
   frame->dlc = 8;
   uint32_t airgap_left_0 = ((msg->m_airgap_left - 0) / 0.0007629510948348211) + 0.5f;
   if (airgap_left_0 > 0xFFFF) {
@@ -259,7 +259,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_controlle
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x15C;
+  frame->id = 0x13C;
   frame->dlc = 8;
   uint32_t left_airgap_controller_p_term_0 = ((msg->m_left_airgap_controller_p_term - -500) / 0.015259021896696421) + 0.5f;
   if (left_airgap_controller_p_term_0 > 0xFFFF) {
@@ -287,7 +287,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_controlle
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x17C;
+  frame->id = 0x15C;
   frame->dlc = 8;
   uint32_t right_airgap_controller_p_term_0 = ((msg->m_right_airgap_controller_p_term - -500) / 0.015259021896696421) + 0.5f;
   if (right_airgap_controller_p_term_0 > 0xFFFF) {
@@ -315,7 +315,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_controlle
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x19C;
+  frame->id = 0x17C;
   frame->dlc = 8;
   uint32_t left_current_controller_p_term_0 = ((msg->m_left_current_controller_p_term - -100) / 0.0030518043793392844) + 0.5f;
   if (left_current_controller_p_term_0 > 0xFFFF) {
@@ -343,7 +343,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_controlle
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x5B;
+  frame->id = 0x19C;
   frame->dlc = 8;
   uint32_t right_current_controller_p_term_0 = ((msg->m_right_current_controller_p_term - -100) / 0.0030518043793392844) + 0.5f;
   if (right_current_controller_p_term_0 > 0xFFFF) {
@@ -371,7 +371,7 @@ static void canzero_serialize_canzero_message_levitation_board1_stream_controlle
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x13C;
+  frame->id = 0x11C;
   frame->dlc = 8;
   uint32_t left_airgap_controller_airgap_0 = ((msg->m_left_airgap_controller_airgap - -10) / 0.0009155413138017853) + 0.5f;
   if (left_airgap_controller_airgap_0 > 0xFFFF) {
@@ -399,7 +399,7 @@ static void canzero_serialize_canzero_message_heartbeat_can0(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1F4;
+  frame->id = 0x1F5;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = msg->m_node_id;
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -410,7 +410,7 @@ static void canzero_serialize_canzero_message_heartbeat_can1(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1F3;
+  frame->id = 0x1F4;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = msg->m_node_id;
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -628,7 +628,7 @@ static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, 
 }
 
 static job_t heartbeat_job;
-static const uint32_t heartbeat_interval = 158;
+static const uint32_t heartbeat_interval = 111;
 static void schedule_heartbeat_job() {
   heartbeat_job.climax = canzero_get_time();
   heartbeat_job.tag = HEARTBEAT_JOB_TAG;
@@ -975,13 +975,13 @@ static void schedule_jobs(uint32_t time) {
         canzero_message_heartbeat_can0 heartbeat_can0;
         heartbeat_can0.m_node_id = node_id_levitation_board1;
         heartbeat_can0.m_unregister = 0;
-        heartbeat_can0.m_ticks_next = 20;
+        heartbeat_can0.m_ticks_next = 14;
         canzero_serialize_canzero_message_heartbeat_can0(&heartbeat_can0, &heartbeat_frame);
         canzero_can0_send(&heartbeat_frame);
         canzero_message_heartbeat_can1 heartbeat_can1;
         heartbeat_can1.m_node_id = node_id_levitation_board1;
         heartbeat_can1.m_unregister = 0;
-        heartbeat_can1.m_ticks_next = 20;
+        heartbeat_can1.m_ticks_next = 14;
         canzero_serialize_canzero_message_heartbeat_can1(&heartbeat_can1, &heartbeat_frame);
         canzero_can1_send(&heartbeat_frame);
         break;
@@ -2877,13 +2877,13 @@ void canzero_can0_poll() {
       case 0x1BE:
         canzero_handle_get_req(&frame);
         break;
-      case 0x6D:
+      case 0x6E:
         canzero_handle_mother_board_stream_levitation_config(&frame);
         break;
-      case 0x51:
+      case 0x52:
         canzero_handle_mother_board_stream_debug_settings(&frame);
         break;
-      case 0x1F4:
+      case 0x1F5:
         canzero_handle_heartbeat_can0(&frame);
         break;
     }
@@ -2896,10 +2896,10 @@ void canzero_can1_poll() {
       case 0x1DE:
         canzero_handle_set_req(&frame);
         break;
-      case 0x4D:
+      case 0x4E:
         canzero_handle_mother_board_stream_levitation_command(&frame);
         break;
-      case 0x1F3:
+      case 0x1F4:
         canzero_handle_heartbeat_can1(&frame);
         break;
     }
@@ -2960,7 +2960,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 6880691237230841129ull;
+  __oe_config_hash = 12445867394052837609ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
