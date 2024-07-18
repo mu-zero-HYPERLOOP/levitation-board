@@ -65,7 +65,7 @@ Voltage FASTRUN guidance_board::sync_read(ain_pin pin) {
     case levitation_state_CONTROL:
     case levitation_state_STOP:
     case levitation_state_DISARMING45:
-      return mock_disp(Distance(canzero_get_target_airgap_left() * 1e-3) + 28_mm);
+      return mock_disp(Distance(canzero_get_target_airgap_left() * 1e-3) + 16_mm + 6_mm - 0.5_mm);
     }
   case ain_pin::disp_sense_mag_r_17:
   case ain_pin::disp_sense_lim_r_16:
@@ -80,7 +80,7 @@ Voltage FASTRUN guidance_board::sync_read(ain_pin pin) {
     case levitation_state_CONTROL:
     case levitation_state_STOP:
     case levitation_state_DISARMING45:
-      return mock_disp(Distance(canzero_get_target_airgap_right() * 1e-3) + 28_mm);
+      return mock_disp(Distance(canzero_get_target_airgap_right() * 1e-3) + 16_mm + 6_mm - 0.5_mm);
     }
   case ain_pin::temp_sense_l2_21:
   case ain_pin::temp_sense_l1_20:

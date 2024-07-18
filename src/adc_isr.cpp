@@ -8,7 +8,6 @@
 #include "sensors/formula/current_sense.h"
 #include "sensors/formula/displacement420.h"
 #include "sensors/formula/isolated_voltage.h"
-#include <Arduino.h>
 #include <avr/pgmspace.h>
 
 using namespace adc_isr;

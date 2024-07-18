@@ -6,8 +6,8 @@
 #include "util/boxcar.h"
 #include <cassert>
 
-static DMAMEM BoxcarFilter<Current, 10> left_filter(0_A);
-static DMAMEM BoxcarFilter<Current, 10> right_filter(0_A);
+static DMAMEM BoxcarFilter<Current, 500> left_filter(0_A);
+static DMAMEM BoxcarFilter<Current, 500> right_filter(0_A);
 
 static void on_left_current(const Voltage &v) {
   const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
