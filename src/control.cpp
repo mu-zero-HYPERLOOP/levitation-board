@@ -114,7 +114,7 @@ void control::begin() {
   const pid_parameters airgap_pid = {
       .m_Kp = 30.0f,
       .m_Ki = 100.0f,
-      .m_Kd = 2.8f,
+      .m_Kd = 1.8f,
   };
   canzero_set_airgap_pid(airgap_pid);
   const pid_parameters_extra airgap_pid_extra = {
