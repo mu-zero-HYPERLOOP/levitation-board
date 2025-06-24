@@ -1,5 +1,6 @@
 #include "sensors/magnet_current.h"
 #include "avr/pgmspace.h"
+#include "print.h"
 #include "canzero/canzero.h"
 #include "firmware/guidance_board.h"
 #include "sensors/formula/current_sense.h"
