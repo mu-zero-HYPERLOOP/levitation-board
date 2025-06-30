@@ -31,5 +31,8 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
   precharge_mosfet::open();
   feedthrough_mosfet::open();
 
+  // Testbench mode
+  return levitation_state_ARMING45;
+
   return levitation_state_IDLE;
 }

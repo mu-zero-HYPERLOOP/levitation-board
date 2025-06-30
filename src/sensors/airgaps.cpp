@@ -16,12 +16,12 @@ static Distance offset_right = 0_m;
 
 Distance sensors::airgaps::conv_left(Voltage v){
   const Current i = v / sensors::airgaps::R_MEAS;
-  debugPrintf("current left: %f\n", static_cast<float>(i));
+  // debugPrintf("current left: %f\n", static_cast<float>(i));
   return sensors::formula::displacement420(i) + offset_left;
 }
 Distance sensors::airgaps::conv_right(Voltage v){
   const Current i = v / sensors::airgaps::R_MEAS;
-  debugPrintf("current right: %f\n", static_cast<float>(i));
+  // debugPrintf("current right: %f\n", static_cast<float>(i));
   return sensors::formula::displacement420(i) + offset_right;
 }
 
