@@ -21,7 +21,7 @@ void pwm_isr_trig1_redirect() {
 
 constexpr bool ENABLE_PWM1 = ENABLE_PWM1_SM3;
 constexpr bool ENABLE_PWM2 =
-    ENABLE_PWM2_SM0 || ENABLE_PWM2_SM2 || ENABLE_PWM2_SM3;
+    ENABLE_PWM2_SM0 || ENABLE_PWM2_SM2; // || ENABLE_PWM2_SM3;
 constexpr bool ENABLE_PWM3 = ENABLE_PWM3_SM1;
 constexpr bool ENABLE_PWM4 = ENABLE_PWM4_SM2;
 

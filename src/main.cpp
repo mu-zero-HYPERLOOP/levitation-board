@@ -72,6 +72,9 @@ int main() {
     sensors::magnet_current::update();
     sensors::magnet_temperatures::update();
     sensors::vdc::update();
+
+    // sensor calibration
+    // debugPrintf("Distance: %f\n", canzero_get_airgap_right());
     
     airgap_transition::update();
     

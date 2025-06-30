@@ -84,8 +84,8 @@ void sensors::airgaps::calibrate() {
   /* offset_right = right_target - cali_right_filter.get(); */
 
   if (CANZERO_NODE_ID == node_id_levitation_board1){
-    offset_left = -24.7_mm;
-    offset_right = -24.3_mm;
+    offset_left = -29.7_mm;
+    offset_right = -29.3_mm;
   }else if (CANZERO_NODE_ID == node_id_levitation_board2) {
     offset_left = -24.2_mm;
     offset_right = -23.5_mm;
