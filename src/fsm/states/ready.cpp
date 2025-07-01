@@ -18,9 +18,6 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
     return levitation_state_START;
   }
 
-  // Test bench mode
-  return levitation_state_START;
-
   control::reset();
 
   airgap_transition::transition_to_ground(0_s);
@@ -28,6 +25,8 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
 
   pwm::control(GuidancePwmControl{});
   pwm::enable_trig1();
+
+  return levitation_state_START;
 
   if (!sdc_brake::request_close()){
     // Close SDC Failed. (brake pulled).

@@ -13,8 +13,6 @@ enum class ain_pin : uint8_t{
   disp_sense_mag_r_17 = 19,
   disp_sense_lim_r_16 = 16,
 
-  // removed from the board
-  // TODO remove from code as well
   temp_sense_l2_21 = 21,
   temp_sense_l1_20 = 20,
   temp_sense_r2_15 = 15,
@@ -61,9 +59,4 @@ enum pwm_pin : uint8_t{
 // FlexPWM3 Module1
 // RIGHT_HIN_R: Pin29 HIGH
 // RIGHT_LIN_R: Pin28 LOW
-
-// Changed this to
-// FlexPWM2 Module0
-// RIGHT_HIN_R: Pin33 HIGH
-// RIGHT_LIN_R: Pin4  LOW
 

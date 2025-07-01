@@ -25,15 +25,14 @@ levitation_state fsm::states::arming45(levitation_command cmd,
     return levitation_state_DISARMING45;
   }
 
-  // Testbench mode
-  return levitation_state_PRECHARGE;
-
   airgap_transition::transition_to_ground(0_s);
 
   if (levitation_command_PRECHARGE == cmd) {
     // precharge should only be send if all SDC switches are closed.
     return levitation_state_PRECHARGE;
   }
+
+  return levitation_state_PRECHARGE;
 
   pwm::control(GuidancePwmControl());
   pwm::enable_output();

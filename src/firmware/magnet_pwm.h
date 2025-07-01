@@ -10,5 +10,5 @@ struct GuidancePwmControl {
     return PwmControl(right_l, left_l, 0.0f, left_r, 0.0f, right_r);
   }
 
-  GuidancePwmControl() : left_l(0.5), left_r(0.5), right_l(0.5), right_r(0.5) {}
+  GuidancePwmControl() : right_l(0.5), left_l(0.5), left_r(0.5), right_r(0.5) {}
 };

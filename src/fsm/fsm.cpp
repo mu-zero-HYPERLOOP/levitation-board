@@ -5,7 +5,7 @@
 #include "fsm/states.h"
 #include "util/timestamp.h"
 
-#include  "print.h"
+#include "print.h"
 
 static Timestamp fsm_last_transition = Timestamp::now();
 
@@ -68,7 +68,7 @@ void fsm::update() {
     }
 
     if (next_state != state) {
-      debugPrintf("Last state: %d, switched to: %d\n", state, next_state);
+      debugPrintf("Previous state %d, next state %d\n", state, next_state);
       fsm_last_transition = now;
       canzero_set_state(next_state);
       canzero_update_continue(canzero_get_time());

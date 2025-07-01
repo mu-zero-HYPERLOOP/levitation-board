@@ -12,6 +12,8 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
     return levitation_state_ARMING45;
   }
 
+  return levitation_state_ARMING45;
+
   if (time_since_last_transition > 3_s){
     canzero_set_error_arming_failed(error_flag_OK);
     canzero_set_error_precharge_failed(error_flag_OK);
@@ -30,9 +32,6 @@ levitation_state fsm::states::idle(levitation_command cmd, Duration time_since_l
 
   precharge_mosfet::open();
   feedthrough_mosfet::open();
-
-  // Testbench mode
-  return levitation_state_ARMING45;
 
   return levitation_state_IDLE;
 }
