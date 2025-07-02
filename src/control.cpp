@@ -175,15 +175,15 @@ GuidancePwmControl FASTRUN control::control_loop(Current current_left,
     last_current_left_ok = now;
   }
   if (now - last_current_left_ok > current_timeout) {
-   sdc_brake::brake_immediatly();
-   return GuidancePwmControl();
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
   }
   if (current_right <= current_error_thresh) {
     last_current_right_ok = now;
   }
   if (now - last_current_right_ok > current_timeout) {
-   sdc_brake::brake_immediatly();
-   return GuidancePwmControl();
+    sdc_brake::brake_immediatly();
+    return GuidancePwmControl();
   }
 
   // ====================== AIRGAP PIDs =========================

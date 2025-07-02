@@ -1,9 +1,9 @@
 #include "sensors/magnet_temperatures.h"
 #include "avr/pgmspace.h"
-#include "print.h"
 #include "canzero/canzero.h"
 #include "error_level_range_check.h"
 #include "firmware/guidance_board.h"
+#include "print.h"
 #include "sensors/formula/ptx.h"
 #include "sensors/formula/voltage_divider.h"
 #include "util/boxcar.h"
@@ -25,32 +25,32 @@ static DMAMEM ErrorLevelRangeCheck<EXPECT_UNDER>
                       canzero_set_error_level_magnet_temperature_right);
 
 static void on_left_value(const Voltage &v) {
-  if (v < 0.1_V){
+  if (v < 0.1_V) {
     canzero_set_error_magnet_temperature_left_invalid(error_flag_ERROR);
     canzero_set_magnet_temperature_left(0);
     return;
   }
   canzero_set_error_magnet_temperature_left_invalid(error_flag_OK);
   const Resistance r_ptx = sensors::formula::r1_of_voltage_divider(
-      4.9_V, v, sensors::magnet_temperatures::R_MEAS);
+      3.3_V, v, sensors::magnet_temperatures::R_MEAS);
   const Temperature temp =
-      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_L) - 15_K;
+      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_L);
   left_filter.push(temp);
   canzero_set_magnet_temperature_left(
       static_cast<float>(left_filter.get() - 0_Celcius));
 }
 
 static void on_right_value(const Voltage &v) {
-  if (v < 0.1_V){
+  if (v < 0.1_V) {
     canzero_set_error_magnet_temperature_right_invalid(error_flag_ERROR);
     canzero_set_magnet_temperature_right(0);
     return;
   }
   canzero_set_error_magnet_temperature_right_invalid(error_flag_OK);
   const Resistance r_ptx = sensors::formula::r1_of_voltage_divider(
-      4.9_V, v, sensors::magnet_temperatures::R_MEAS);
+      3.3_V, v, sensors::magnet_temperatures::R_MEAS);
   const Temperature temp =
-      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_R) - 15_K;
+      sensors::formula::ptx(r_ptx, sensors::magnet_temperatures::PTX_R0_R);
   right_filter.push(temp);
   canzero_set_magnet_temperature_right(
       static_cast<float>(right_filter.get() - 0_Celcius));
