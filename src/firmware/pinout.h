@@ -8,9 +8,14 @@ enum class ctrl_pin : uint8_t {
 };
 
 enum class ain_pin : uint8_t{
-  disp_sense_mag_l_19 = 18,
+  // modified
+  disp_sense_mag_l_19 = 19,
+  //disp_sense_mag_l_19 = 18,  This is the actual on the PCB design
   disp_sense_lim_l_18 = 17,
-  disp_sense_mag_r_17 = 19,
+
+  // modified, as this way the cabling is cleaner
+  disp_sense_mag_r_17 = 18,
+  //disp_sense_mag_r_17 = 19,  This is the actual on the PCB design
   disp_sense_lim_r_16 = 16,
 
   temp_sense_l2_21 = 21,
@@ -56,7 +61,8 @@ enum pwm_pin : uint8_t{
 // RIGHT_HIN_L: Pin8 HIGH
 // RIGHT_LIN_L: Pin7 LOW
 
-// FlexPWM3 Module1
-// RIGHT_HIN_R: Pin29 HIGH
-// RIGHT_LIN_R: Pin28 LOW
-
+// New in season five
+// FIXME might not be the correct high / low pin assignment
+// FlexPWM2 Module0
+// RIGHT_HIN_R: Pin4 HIGH
+// RIGHT_LIN_R: Pin33 LOW
