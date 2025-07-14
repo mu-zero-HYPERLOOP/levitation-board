@@ -12,7 +12,6 @@
 #include "sensors/formula/ptx.h"
 #include "sensors/formula/voltage_divider.h"
 #include "sensors/input_current.h"
-#include "sensors/magnet_temperatures.h"
 #include "util/boxcar.h"
 #include "util/interval.h"
 #include "util/metrics.h"
@@ -101,12 +100,8 @@ Voltage FASTRUN guidance_board::sync_read(ain_pin pin) {
     }
   case ain_pin::temp_sense_l2_21:
   case ain_pin::temp_sense_l1_20:
-    return mock_temperature(24_Celcius, sensors::magnet_temperatures::PTX_R0_L,
-                            sensors::magnet_temperatures::R_MEAS);
   case ain_pin::temp_sense_r2_15:
   case ain_pin::temp_sense_r1_14:
-    return mock_temperature(24_Celcius, sensors::magnet_temperatures::PTX_R0_R,
-                            sensors::magnet_temperatures::R_MEAS);
   case ain_pin::vdc_sense_40: {
     switch (canzero_get_state()) {
     case levitation_state_INIT:

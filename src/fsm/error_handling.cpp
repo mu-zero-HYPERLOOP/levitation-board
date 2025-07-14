@@ -24,8 +24,6 @@ levitation_command fsm::error_handling::approve(levitation_command cmd) {
 
   const auto error_levels = std::array<error_level, 7>{
       canzero_get_error_level_mcu_temperature(),
-      canzero_get_error_level_magnet_temperature_left(),
-      canzero_get_error_level_magnet_temperature_right(),
       canzero_get_error_level_vdc_voltage(),
       canzero_get_error_level_input_current(),
       canzero_get_error_level_magnet_current_left(),
