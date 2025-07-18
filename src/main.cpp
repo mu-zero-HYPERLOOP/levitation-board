@@ -12,7 +12,6 @@
 #include "sensors/airgaps.h"
 #include "sensors/input_current.h"
 #include "sensors/magnet_current.h"
-#include "sensors/magnet_temperatures.h"
 #include "sensors/mcu_temperature.h"
 #include "sensors/vdc.h"
 #include "xbar_config.h"
@@ -32,7 +31,6 @@ int main() {
   sensors::input_current::begin();
   sensors::mcu_temperature::begin();
   sensors::magnet_current::begin();
-  sensors::magnet_temperatures::begin();
   sensors::vdc::begin();
 
   airgap_transition::begin();
@@ -42,7 +40,6 @@ int main() {
   sensors::input_current::calibrate();
   sensors::mcu_temperature::calibrate();
   sensors::magnet_current::calibrate();
-  sensors::magnet_temperatures::calibrate();
   sensors::vdc::calibrate();
 
   airgap_transition::calibrate();
@@ -70,7 +67,6 @@ int main() {
     sensors::input_current::update();
     sensors::mcu_temperature::update();
     sensors::magnet_current::update();
-    sensors::magnet_temperatures::update();
     sensors::vdc::update();
     
     airgap_transition::update();
