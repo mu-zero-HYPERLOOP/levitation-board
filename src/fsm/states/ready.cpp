@@ -26,8 +26,6 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
   pwm::control(GuidancePwmControl{});
   pwm::enable_trig1();
 
-  return levitation_state_START;
-
   if (!sdc_brake::request_close()){
     // Close SDC Failed. (brake pulled).
     debugPrintf("ERROR_HANDLING: SDC FAILED TO CLOSE");

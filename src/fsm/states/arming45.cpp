@@ -32,8 +32,6 @@ levitation_state fsm::states::arming45(levitation_command cmd,
     return levitation_state_PRECHARGE;
   }
 
-  return levitation_state_PRECHARGE;
-
   pwm::control(GuidancePwmControl());
   pwm::enable_output();
   pwm::disable_trig1();
