@@ -112,7 +112,7 @@ static Duration current_timeout = 3_s;
 
 void control::begin() {
   const pid_parameters airgap_pid = {
-      .m_Kp = 30.0f,
+      .m_Kp = 38.0f,
       .m_Ki = 100.0f,
       .m_Kd = 1.8f,
   };
