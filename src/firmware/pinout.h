@@ -9,8 +9,8 @@ enum class ctrl_pin : uint8_t {
 
 enum class ain_pin : uint8_t{
   disp_sense_mag_l_19 = 19,
-  disp_sense_lim_l_18 = 18,
-  disp_sense_mag_r_17 = 17,
+  disp_sense_lim_l_18 = 17,
+  disp_sense_mag_r_17 = 18,
   disp_sense_lim_r_16 = 16,
 
   temp_sense_l2_21 = 21,
@@ -33,8 +33,8 @@ enum pwm_pin : uint8_t{
 
   right_high_l = 8,
   right_low_l = 7,
-  right_high_r = 29,
-  right_low_r = 28,
+  right_high_r = 33,
+  right_low_r = 4,
 };
 
 

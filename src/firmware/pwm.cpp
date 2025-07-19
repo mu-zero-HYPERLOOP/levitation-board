@@ -271,8 +271,8 @@ static inline void pwm1_sm3_set_duty_cycles(uint16_t cycles) {
 }
 
 static inline void pwm2_sm0_set_duty_cycles(uint16_t cycles) {
-  FLEXPWM2_SM0VAL2 = -cycles;
-  FLEXPWM2_SM0VAL3 = cycles;
+  FLEXPWM2_SM0VAL2 = cycles;
+  FLEXPWM2_SM0VAL3 = -cycles;
 }
 
 static inline void pwm2_sm2_set_duty_cycles(uint16_t cycles) {
