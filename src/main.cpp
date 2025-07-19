@@ -68,6 +68,8 @@ int main() {
     sensors::mcu_temperature::update();
     sensors::magnet_current::update();
     sensors::vdc::update();
+
+    debugPrintf("Current: %fA\n", canzero_get_current_left());
     
     airgap_transition::update();
     
