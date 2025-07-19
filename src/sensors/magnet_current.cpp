@@ -15,13 +15,13 @@ static Current roffset;
 static void on_left_current(const Voltage &v) {
   const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   left_filter.push(i);
-  canzero_set_current_left(static_cast<float>(i - loffset));
+  canzero_set_current_left(static_cast<float>(i));
 }
 
 static void on_right_current(const Voltage &v) {
   const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   right_filter.push(i);
-  canzero_set_current_right(static_cast<float>(i - roffset));
+  canzero_set_current_right(static_cast<float>(i));
 }
 
 void sensors::magnet_current::begin() {

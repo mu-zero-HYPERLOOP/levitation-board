@@ -58,9 +58,9 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   // Current sense
   const Current i_mag_r = sensors::formula::current_sense(
-      v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm) - right_cali_offset.get();
+      v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm);
   const Current i_mag_l = sensors::formula::current_sense(
-      v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm) - left_cali_offset.get();
+      v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm);
 
   const Distance disp_sense_mag_l =
       sensors::airgaps::conv_left(v_disp_sense_mag_l);
@@ -77,13 +77,4 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 void adc_isr::update() {
   error_check_current_left.check();
   error_check_current_right.check();
-
-  if (canzero_get_state() == levitation_state_READY && interval.next()) {
-    Current cleft(canzero_get_current_left());
-    Current cright(canzero_get_current_right());
-    left_cali_offset.push(cleft);
-    right_cali_offset.push(cright);
-  } else {
-    interval.reset();
-  }
 }
