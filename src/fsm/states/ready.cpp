@@ -22,9 +22,9 @@ levitation_state fsm::states::ready(levitation_command cmd, Duration time_since_
 
   airgap_transition::transition_to_ground(0_s);
 
-
   pwm::control(GuidancePwmControl{});
-  pwm::enable_trig1();
+  pwm::enable_output();
+  pwm::disable_trig1();
 
   if (!sdc_brake::request_close()){
     // Close SDC Failed. (brake pulled).

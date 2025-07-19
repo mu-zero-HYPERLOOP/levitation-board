@@ -84,14 +84,14 @@ void sensors::airgaps::calibrate() {
   /* offset_right = right_target - cali_right_filter.get(); */
 
   if (CANZERO_NODE_ID == node_id_levitation_board1){
-    offset_left = -24.7_mm;
-    offset_right = -24.3_mm;
+    offset_left = -28_mm;
+    offset_right = -28_mm;
   }else if (CANZERO_NODE_ID == node_id_levitation_board2) {
-    offset_left = -24.2_mm;
-    offset_right = -23.5_mm;
+    offset_left = -28_mm;
+    offset_right = -28_mm;
   }else if (CANZERO_NODE_ID == node_id_levitation_board3) {
-    offset_left = -24.3_mm;
-    offset_right = -24.6_mm;
+    offset_left = -28_mm;
+    offset_right = -28_mm;
   }
 
   for (size_t i = 0; i < left_filter.size(); ++i) {

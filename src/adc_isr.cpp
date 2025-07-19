@@ -8,6 +8,8 @@
 #include "sensors/formula/current_sense.h"
 #include "sensors/formula/displacement420.h"
 #include "sensors/formula/isolated_voltage.h"
+#include "util/boxcar.h"
+#include "util/interval.h"
 #include <avr/pgmspace.h>
 
 using namespace adc_isr;
@@ -21,6 +23,10 @@ static ErrorLevelRangeCheck<EXPECT_UNDER>
     error_check_current_right(canzero_get_current_right,
                               canzero_get_error_level_config_magnet_current,
                               canzero_set_error_level_magnet_current_right);
+
+static Interval interval(100_Hz);
+static BoxcarFilter<Current, 1000> left_cali_offset(0_A);
+static BoxcarFilter<Current, 1000> right_cali_offset(0_A);
 
 void adc_isr::begin() {
   canzero_set_gamepad_x_down(bool_t_FALSE);
@@ -52,9 +58,9 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 
   // Current sense
   const Current i_mag_r = sensors::formula::current_sense(
-      v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm);
+      v_i_mag_r, CURRENT_MEAS_GAIN_RIGHT, 1_mOhm) - right_cali_offset.get();
   const Current i_mag_l = sensors::formula::current_sense(
-      v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm);
+      v_i_mag_l, CURRENT_MEAS_GAIN_LEFT, 1_mOhm) - left_cali_offset.get();
 
   const Distance disp_sense_mag_l =
       sensors::airgaps::conv_left(v_disp_sense_mag_l);
@@ -71,4 +77,13 @@ void adc_etc_done0_isr(AdcTrigRes res) {
 void adc_isr::update() {
   error_check_current_left.check();
   error_check_current_right.check();
+
+  if (canzero_get_state() == levitation_state_READY && interval.next()) {
+    Current cleft(canzero_get_current_left());
+    Current cright(canzero_get_current_right());
+    left_cali_offset.push(cleft);
+    right_cali_offset.push(cright);
+  } else {
+    interval.reset();
+  }
 }

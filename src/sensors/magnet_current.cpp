@@ -6,19 +6,22 @@
 #include "util/boxcar.h"
 #include <cassert>
 
-static DMAMEM BoxcarFilter<Current, 500> left_filter(0_A);
-static DMAMEM BoxcarFilter<Current, 500> right_filter(0_A);
+static DMAMEM BoxcarFilter<Current, 1000> left_filter(0_A);
+static DMAMEM BoxcarFilter<Current, 1000> right_filter(0_A);
+
+static Current loffset;
+static Current roffset;
 
 static void on_left_current(const Voltage &v) {
   const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   left_filter.push(i);
-  canzero_set_current_left(static_cast<float>(i));
+  canzero_set_current_left(static_cast<float>(i - loffset));
 }
 
 static void on_right_current(const Voltage &v) {
   const Current i = sensors::formula::current_sense(v, sensors::magnet_current::SENSE_GAIN, 1_mOhm);
   right_filter.push(i);
-  canzero_set_current_right(static_cast<float>(i));
+  canzero_set_current_right(static_cast<float>(i - roffset));
 }
 
 void sensors::magnet_current::begin() {
@@ -42,6 +45,7 @@ void sensors::magnet_current::calibrate() {
     guidance_board::delay(1_ms);
   }
 }
+
 
 static Timestamp ready_current_ok_left = Timestamp::now();
 static Timestamp ready_current_ok_right = Timestamp::now();
@@ -67,6 +71,11 @@ void sensors::magnet_current::update() {
   }else {
     ready_current_ok_left = Timestamp::now();
     ready_current_ok_right = Timestamp::now();
+  }
+
+  if (canzero_get_state() == levitation_state_READY) {
+    loffset = left_filter.get();
+    roffset = right_filter.get();
   }
 
 }
