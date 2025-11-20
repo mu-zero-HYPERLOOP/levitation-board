@@ -9,16 +9,17 @@
 ######################################################################
 
 
+cmake -Bbuild
 canzero gen levitation_board1 src/canzero
-make -C build
+cmake --build build -j8
 alacritty -e $PWD/build/levitation-board&
 
 canzero gen levitation_board2 src/canzero
-make -C build
+cmake --build build -j8
 alacritty -e $PWD/build/levitation-board&
 
 canzero gen levitation_board3 src/canzero
-make -C build
+cmake --build build -j8
 alacritty -e $PWD/build/levitation-board&
 
 
