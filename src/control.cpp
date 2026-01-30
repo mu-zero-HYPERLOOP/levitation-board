@@ -447,8 +447,12 @@ void control::reset() {
       airgap_pid_extra.m_filter_mode;
   switch (pid_right_airgap_parameters.error_filter_mode) {
   case filter_mode_EMA:
-    pid_right_airgap_ema.set_alpha(airgap_pid_extra.m_conv_ema_alpha);
+    pid_right_airgap_ema.set_alpha(airgap_pid_extra.m_ema_alpha);
     pid_right_airgap_ema.reset(canzero_get_airgap_left() * 1e-3);
+    
+    // pid_right_airgap_ema.set_alpha(airgap_pid_extra.m_ema_alpha);
+    // pid_right_airgap_ema.reset(canzero_get_airgap_right() * 1e-3);
+
     break;
   case filter_mode_BOXCAR:
     pid_right_airgap_boxcar.reset(canzero_get_airgap_right() * 1e-3,
@@ -522,7 +526,7 @@ void FASTRUN control::update() {
   canzero_set_left_current_controller_target(debug_left_target_current / 1_A);
   canzero_set_left_current_controller_p_term(pi_left_current_state.p_term);
   canzero_set_left_current_controller_i_term(pi_left_current_state.i_term);
-  canzero_set_right_current_controller_output(debug_left_voltage / 1_V);
+  canzero_set_left_current_controller_output(debug_left_voltage / 1_V);
 
   canzero_set_right_current_controller_target(debug_right_target_current / 1_A);
   canzero_set_right_current_controller_p_term(pi_right_current_state.p_term);
